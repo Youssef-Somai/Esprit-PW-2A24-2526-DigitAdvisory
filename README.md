@@ -74,5 +74,5 @@ Academic Year: 2025–2026
 ### Installation
 
 ```bash
-git clone https://github.com/your-username/BeDigitAdvisory.git
+git clone https://github.com/Youssef-Somai/Esprit-PW-2A-2526-BeDigitAdvisory.git
 cd BeDigitAdvisory
