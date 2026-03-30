@@ -1,42 +1,50 @@
-# Be-Digit Advisory AI
+# Digit Advisory AI
 
 ## Overview
-Be-Digit Advisory AI is a smart digital consulting platform that helps organizations transform digitally using Artificial Intelligence and sustainable (Green IT) solutions.
+
+Be-Digit Advisory AI is an intelligent digital consulting platform designed to help organizations achieve digital transformation using Artificial Intelligence and sustainable (Green IT) solutions.
 
 This project was developed at Esprit School of Engineering – Tunisia (Academic Year 2025–2026).
 
-The platform acts as a virtual consultant that analyzes companies and provides recommendations, strategies, and transformation roadmaps.
+The platform acts as a virtual consultant capable of analyzing companies and providing tailored recommendations, strategies, and digital transformation roadmaps.
 
 ---
 
 ## Features
-- AI-powered digital consulting assistant
-- Digital maturity assessment
-- Personalized recommendations
-- Digital transformation roadmap generation
-- Green IT suggestions (eco-friendly solutions)
-- User dashboard
+
+* AI-powered digital consulting assistant
+* Digital maturity assessment
+* Personalized recommendations
+* Digital transformation roadmap generation
+* Green IT suggestions (eco-friendly solutions)
+* User dashboard
+* Access to human consultants for personalized support
+* Recommendations of specialized service providers to ensure effective implementation
 
 ---
 
 ## Tech Stack
 
 ### Frontend
-- HTML5
-- CSS3
-- JavaScript
+
+* HTML5
+* CSS3
+* JavaScript
 
 ### Backend
-- PHP
+
+* PHP
 
 ### Database
-- MySQL
+
+* MySQL
 
 ### Development Tools
-- Git
-- GitHub
-- Visual Studio Code
-- XAMPP / Apache Server
+
+* Git
+* GitHub
+* Visual Studio Code
+* XAMPP / Apache Server
 
 ---
 
@@ -45,27 +53,32 @@ The platform acts as a virtual consultant that analyzes companies and provides r
 The application follows a **Client–Server Architecture** based on the **MVC (Model–View–Controller)** pattern.
 
 ### Model
+
 Handles database operations using MySQL.
 
 ### View
-Handles user interface using HTML, CSS, and JavaScript.
+
+Manages the user interface using HTML, CSS, and JavaScript.
 
 ### Controller
-Handles business logic and communication between Model and View using PHP.
+
+Handles business logic and communication between the Model and View using PHP.
 
 ### Workflow
-1. User interacts with the interface
-2. Request sent to Controller
-3. Controller processes logic
-4. Model accesses database
-5. Response sent back to user
+
+1. The user interacts with the interface
+2. The request is sent to the Controller
+3. The Controller processes the logic
+4. The Model accesses the database
+5. The response is returned to the user
 
 ---
 
 ## Academic Context
-Developed as part of Web Technologies Project (2A)  
-Esprit School of Engineering – Tunisia  
-Academic Year: 2025–2026  
+
+Developed as part of a Web Technologies Project (2nd Year)
+Esprit School of Engineering – Tunisia
+Academic Year: 2025–2026
 
 ---
 
@@ -74,5 +87,31 @@ Academic Year: 2025–2026
 ### Installation
 
 ```bash
-git clone https://github.com/Youssef-Somai/Esprit-PW-2A-2526-BeDigitAdvisory.git
-cd BeDigitAdvisory
+git clone https://github.com/Youssef-Somai/Esprit-PW-2A24-2526-DigitAdvisory.git
+cd DigitAdvisory
+```
+
+### Requirements
+
+* PHP >= 7.x
+* MySQL
+* Apache Server (XAMPP recommended)
+
+### Running the Project
+
+1. Place the project in the `htdocs` folder (if using XAMPP)
+2. Start Apache and MySQL
+3. Import the database into phpMyAdmin
+4. Access the project via `http://localhost/DigitAdvisory`
+
+---
+
+## Contribution
+
+Contributions are welcome. Feel free to fork the repository and submit a pull request.
+
+---
+
+## License
+
+This project is developed for academic purposes.
