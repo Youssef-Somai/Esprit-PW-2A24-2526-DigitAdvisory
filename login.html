@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion / Inscription | Digit Advisory</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .auth-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, var(--light) 0%, #e0e7ff 100%);
+            padding: 2rem;
+        }
+
+        .auth-box {
+            background: white;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            width: 100%;
+            max-width: 500px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .auth-header {
+            text-align: center;
+            padding: 2rem;
+            background: rgba(37, 99, 235, 0.05);
+            border-bottom: 1px solid var(--gray-light);
+        }
+
+        .auth-header .logo {
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+
+        .auth-tabs {
+            display: flex;
+            background: var(--light);
+        }
+
+        .auth-tab {
+            flex: 1;
+            text-align: center;
+            padding: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            color: var(--gray);
+            border-bottom: 2px solid transparent;
+            transition: var(--transition);
+        }
+
+        .auth-tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+            background: white;
+        }
+
+        .auth-body {
+            padding: 2rem;
+            position: relative;
+            min-height: 400px;
+        }
+
+        .auth-form {
+            position: absolute;
+            top: 2rem;
+            left: 2rem;
+            right: 2rem;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateX(20px);
+            transition: all 0.4s ease;
+        }
+
+        .auth-form.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(0);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--dark);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--gray-light);
+            border-radius: var(--radius);
+            font-family: var(--font-main);
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .role-selector {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .role-option {
+            flex: 1;
+            border: 1px solid var(--gray-light);
+            border-radius: var(--radius);
+            padding: 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .role-option:hover {
+            border-color: var(--primary);
+            background: rgba(37, 99, 235, 0.05);
+        }
+
+        .role-option.selected {
+            border-color: var(--primary);
+            background: rgba(37, 99, 235, 0.1);
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .role-option i {
+            display: block;
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .btn-block {
+            width: 100%;
+            margin-top: 1rem;
+        }
+
+        /* Back to home */
+        .back-link {
+            position: absolute;
+            top: 2rem;
+            left: 2rem;
+            color: var(--primary);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            z-index: 10;
+        }
+        .back-link:hover {
+            color: var(--primary-hover);
+        }
+    </style>
+</head>
+<body>
+
+    <a href="index.html" class="back-link"><i class="fa-solid fa-arrow-left"></i> Retour</a>
+
+    <div class="auth-container">
+        <div class="auth-box fade-in-up">
+            <div class="auth-header">
+                <div class="logo">
+                    <i class="fa-solid fa-chart-pie text-primary"></i>
+                    Digit Advisory
+                </div>
+                <p style="color: var(--gray); font-size: 0.9rem;">Accédez à l'espace de gestion et d'expertise</p>
+            </div>
+
+            <div class="auth-tabs">
+                <div class="auth-tab active" data-target="login">Connexion</div>
+                <div class="auth-tab" data-target="register">Inscription</div>
+            </div>
+
+            <div class="auth-body">
+                <!-- Login Form -->
+                <form id="login" class="auth-form active" action="dashboard.html" method="GET" onsubmit="return handleLogin(event)">
+                    <div class="form-group">
+                        <label for="login-email">Email professionnel</label>
+                        <input type="email" id="login-email" class="form-control" placeholder="exemple@entreprise.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="login-password">Mot de passe</label>
+                        <input type="password" id="login-password" class="form-control" placeholder="••••••••" required>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 1.5rem; font-size: 0.9rem;">
+                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                            <input type="checkbox"> Se souvenir de moi
+                        </label>
+                        <a href="#" class="text-primary">Mot de passe oublié ?</a>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">Se connecter</button>
+                    <!-- Role hidden selector for demo logic -->
+                    <select id="login-role-demo" class="form-control mt-1" style="font-size:0.8rem; background:#f8fafc;">
+                        <option value="entreprise">Démo: Se connecter en tant qu'Entreprise</option>
+                        <option value="expert">Démo: Se connecter en tant qu'Expert</option>
+                    </select>
+                </form>
+
+                <!-- Register Form -->
+                <form id="register" class="auth-form" action="dashboard.html" method="GET" onsubmit="return handleLogin(event)">
+                    <div class="role-selector">
+                        <div class="role-option selected" data-role="entreprise" onclick="selectRole('entreprise')">
+                            <i class="fa-regular fa-building"></i>
+                            Entreprise
+                        </div>
+                        <div class="role-option" data-role="expert" onclick="selectRole('expert')">
+                            <i class="fa-solid fa-user-tie"></i>
+                            Expert
+                        </div>
+                    </div>
+                    
+                    <input type="hidden" id="register-role" value="entreprise">
+
+                    <div class="form-group">
+                        <label for="reg-name" id="label-name">Nom de l'entreprise</label>
+                        <input type="text" id="reg-name" class="form-control" placeholder="Entrez le nom" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="reg-email">Email</label>
+                        <input type="email" id="reg-email" class="form-control" placeholder="exemple@domaine.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="reg-password">Mot de passe</label>
+                        <input type="password" id="reg-password" class="form-control" placeholder="Créez un mot de passe" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">Créer mon compte</button>
+                    <p style="text-align: center; margin-top: 1rem; font-size: 0.8rem; color: var(--gray);">
+                        En créant un compte, vous acceptez nos <a href="#" class="text-primary">Conditions d'utilisation</a>.
+                    </p>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab switching logic
+        const tabs = document.querySelectorAll('.auth-tab');
+        const forms = document.querySelectorAll('.auth-form');
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                // Remove active classes
+                tabs.forEach(t => t.classList.remove('active'));
+                forms.forEach(f => f.classList.remove('active'));
+
+                // Add active to current
+                tab.classList.add('active');
+                const targetId = tab.getAttribute('data-target');
+                document.getElementById(targetId).classList.add('active');
+            });
+        });
+
+        // Check hash for direct register link
+        if(window.location.hash === '#register') {
+            document.querySelector('[data-target="register"]').click();
+        }
+
+        // Role selection logic
+        function selectRole(role) {
+            document.querySelectorAll('.role-option').forEach(el => el.classList.remove('selected'));
+            document.querySelector(`.role-option[data-role="${role}"]`).classList.add('selected');
+            document.getElementById('register-role').value = role;
+
+            const labelName = document.getElementById('label-name');
+            if(role === 'entreprise') {
+                labelName.textContent = "Nom de l'entreprise";
+            } else {
+                labelName.textContent = "Nom complet de l'Expert";
+            }
+        }
+
+        // Handle Form Submission for Demo
+        function handleLogin(e) {
+            e.preventDefault();
+            // Determine role to redirect to appropriate dashboard context
+            const formId = e.target.id;
+            let role = 'entreprise';
+            
+            if(formId === 'login') {
+                role = document.getElementById('login-role-demo').value;
+            } else {
+                role = document.getElementById('register-role').value;
+            }
+
+            // In a real app this would be server side, for now we just append to URL params or redirect
+            if(role === 'expert') {
+                window.location.href = 'front-office/front-expert-dashboard.html';
+            } else {
+                window.location.href = 'front-office/front-entreprise-dashboard.html';
+            }
+            return false;
+        }
+    </script>
+</body>
+</html>
