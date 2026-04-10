@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
@@ -6,7 +6,7 @@
     <title>Espace Expert | Portfolio & CV</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../../css/style.css">
     <style>
         body { background-color: #f1f5f9; }
         .dashboard-container { display: flex; min-height: 100vh; }
@@ -30,19 +30,19 @@
 <body>
     <div class="dashboard-container">
         <aside class="sidebar">
-            <div class="sidebar-header"><a href="../index.html" class="logo" style="text-decoration: none;"><i class="fa-solid fa-chart-pie text-secondary"></i> Digit Advisory</a></div>
+            <div class="sidebar-header"><a href="index.php" class="logo" style="text-decoration: none;"><i class="fa-solid fa-chart-pie text-secondary"></i> Digit Advisory</a></div>
             <div class="sidebar-menu">
-                <a href="front-expert-dashboard.html" class="menu-item"><i class="fa-solid fa-house"></i> Vue d'ensemble</a>
-                <a href="front-expert-profil.html" class="menu-item"><i class="fa-solid fa-user"></i> Mon Profil Expert</a>
-                <a href="front-expert-portfolio.html" class="menu-item active"><i class="fa-solid fa-folder-open"></i> Portfolio & CV</a>
-                <a href="front-expert-offres.html" class="menu-item"><i class="fa-solid fa-briefcase"></i> Explorer les Offres</a>
-                <a href="front-expert-candidatures.html" class="menu-item"><i class="fa-solid fa-file-contract"></i> Mes Candidatures</a>
-                <a href="front-expert-messagerie.html" class="menu-item"><i class="fa-solid fa-comments"></i> Messagerie</a>
+                <a href="front-expert-dashboard.php" class="menu-item"><i class="fa-solid fa-house"></i> Vue d'ensemble</a>
+                <a href="front-expert-profil.php" class="menu-item"><i class="fa-solid fa-user"></i> Mon Profil Expert</a>
+                <a href="front-expert-portfolio.php" class="menu-item active"><i class="fa-solid fa-folder-open"></i> Portfolio & CV</a>
+                <a href="front-expert-offres.php" class="menu-item"><i class="fa-solid fa-briefcase"></i> Explorer les Offres</a>
+                <a href="front-expert-candidatures.php" class="menu-item"><i class="fa-solid fa-file-contract"></i> Mes Candidatures</a>
+                <a href="front-expert-messagerie.php" class="menu-item"><i class="fa-solid fa-comments"></i> Messagerie</a>
             </div>
             <div class="user-profile-widget">
                 <div class="user-avatar">AL</div>
                 <div><h4 style="font-size: 0.95rem; margin-bottom: 0.2rem;">Alice Martin</h4><span style="font-size: 0.8rem; color: var(--gray);">Consultant Senior</span></div>
-                <a href="../login.html" style="margin-left: auto; color: var(--danger);"><i class="fa-solid fa-arrow-right-from-bracket"></i></a>
+                <a href="login.php" style="margin-left: auto; color: var(--danger);"><i class="fa-solid fa-arrow-right-from-bracket"></i></a>
             </div>
         </aside>
 

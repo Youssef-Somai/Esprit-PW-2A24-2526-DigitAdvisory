@@ -6,7 +6,7 @@
     <title>Connexion / Inscription | Digit Advisory</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="../../css/style.css">
     <style>
         .auth-container {
             display: flex;
@@ -169,7 +169,7 @@
 </head>
 <body>
 
-    <a href="index.html" class="back-link"><i class="fa-solid fa-arrow-left"></i> Retour</a>
+    <a href="index.php" class="back-link"><i class="fa-solid fa-arrow-left"></i> Retour</a>
 
     <div class="auth-container">
         <div class="auth-box fade-in-up">
@@ -299,9 +299,9 @@
 
             // In a real app this would be server side, for now we just append to URL params or redirect
             if(role === 'expert') {
-                window.location.href = 'front-office/front-expert-dashboard.html';
+                window.location.href = 'front-expert-dashboard.php';
             } else {
-                window.location.href = 'front-office/front-entreprise-dashboard.html';
+                window.location.href = 'front-entreprise-dashboard.php';
             }
             return false;
         }

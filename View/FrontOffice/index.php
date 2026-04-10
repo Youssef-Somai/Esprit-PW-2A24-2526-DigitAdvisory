@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
@@ -8,14 +8,14 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="../../css/style.css">
 </head>
 <body>
 
     <!-- Header Navigation -->
     <header id="header">
         <div class="container nav-container">
-            <a href="index.html" class="logo">
+            <a href="index.php" class="logo">
                 <i class="fa-solid fa-chart-pie text-primary"></i>
                 Digit Advisory
             </a>
@@ -25,8 +25,8 @@
                 <li><a href="#avis">Avis Clients</a></li>
             </ul>
             <div class="nav-actions">
-                <a href="login.html" class="btn btn-outline">Se connecter</a>
-                <a href="login.html#register" class="btn btn-primary" style="margin-left: 10px;">S'inscrire</a>
+                <a href="login.php" class="btn btn-outline">Se connecter</a>
+                <a href="login.php#register" class="btn btn-primary" style="margin-left: 10px;">S'inscrire</a>
             </div>
         </div>
     </header>
@@ -40,7 +40,7 @@
                 <h1>L'expertise de haut niveau à portée de main</h1>
                 <p>Connectez-vous avec les meilleurs consultants experts pour vos besoins en audit, recommandations et certifications ISO. Menez vos projets vers l'excellence.</p>
                 <div style="display: flex; gap: 1rem;">
-                    <a href="login.html#register" class="btn btn-primary">Commencer maintenant <i class="fa-solid fa-arrow-right"></i></a>
+                    <a href="login.php#register" class="btn btn-primary">Commencer maintenant <i class="fa-solid fa-arrow-right"></i></a>
                     <a href="#services" class="btn btn-outline">Découvrir</a>
                 </div>
             </div>

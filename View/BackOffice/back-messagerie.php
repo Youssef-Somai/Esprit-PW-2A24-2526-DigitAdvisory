@@ -1,12 +1,12 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Back Office | Gestion Quiz</title>
+    <title>Back Office | Gestion Messagerie</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../../css/style.css">
     <style>
         .sidebar { background: var(--dark); color: white; }
         .sidebar .menu-item { color: var(--gray-light); }
@@ -29,37 +29,33 @@
         .data-table th, .data-table td { padding: 1rem; text-align: left; border-bottom: 1px solid var(--gray-light); }
         .data-table th { color: var(--gray); font-weight: 500; }
         .badge { padding: 0.25rem 0.75rem; border-radius: var(--radius-full); font-size: 0.85rem; font-weight: 500; display: inline-block;}
-        .badge.success { background: rgba(16, 185, 129, 0.1); color: var(--success); }
         .badge.primary { background: rgba(37, 99, 235, 0.1); color: var(--primary); }
         .btn-sm { padding: 0.4rem 0.8rem; font-size: 0.85rem; }
+        .stat-card { background: white; padding: 1.5rem; border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); display: flex; align-items: center; gap: 1rem; }
+        .stat-icon { width: 50px; height: 50px; border-radius: var(--radius); background: rgba(37, 99, 235, 0.1); color: var(--primary); display: flex; justify-content: center; align-items: center; font-size: 1.5rem; }
     </style>
 </head>
 <body class="admin-theme">
     <div class="dashboard-container">
-        <!-- Sidebar ADMIN -->
         <aside class="sidebar admin-sidebar slide-in-right">
             <div class="sidebar-header">
                 <div class="logo">
                     <i class="fa-solid fa-user-shield text-accent"></i> Admin Panel
                 </div>
             </div>
-            
             <div class="sidebar-menu">
-                <a href="back-utilisateur.html" class="menu-item"><i class="fa-solid fa-users"></i> Gestion Utilisateurs</a>
-                <a href="back-quiz.html" class="menu-item active"><i class="fa-solid fa-list-check"></i> Gestion Quiz</a>
-                <a href="back-portfolio.html" class="menu-item"><i class="fa-solid fa-folder-open"></i> Gestion Portfolios</a>
-                <a href="back-offres.html" class="menu-item"><i class="fa-solid fa-briefcase"></i> Gestion Offres</a>
-                <a href="back-certification.html" class="menu-item"><i class="fa-solid fa-award"></i> Gestion Certifications</a>
-                <a href="back-messagerie.html" class="menu-item"><i class="fa-solid fa-comments"></i> Gestion Messagerie</a>
+                <a href="back-utilisateur.php" class="menu-item"><i class="fa-solid fa-users"></i> Gestion Utilisateurs</a>
+                <a href="back-quiz.php" class="menu-item"><i class="fa-solid fa-list-check"></i> Gestion Quiz</a>
+                <a href="back-portfolio.php" class="menu-item"><i class="fa-solid fa-folder-open"></i> Gestion Portfolios</a>
+                <a href="back-offres.php" class="menu-item"><i class="fa-solid fa-briefcase"></i> Gestion Offres</a>
+                <a href="back-certification.php" class="menu-item"><i class="fa-solid fa-award"></i> Gestion Certifications</a>
+                <a href="back-messagerie.php" class="menu-item active"><i class="fa-solid fa-comments"></i> Gestion Messagerie</a>
             </div>
-
             <div class="user-profile-widget">
                 <div class="user-avatar">AD</div>
-                <div>
-                    <h4 style="font-size: 0.95rem; margin-bottom: 0.2rem; color: white;">Admin Système</h4>
-                    <span style="font-size: 0.8rem; color: var(--gray-light);">Admin</span>
-                </div>
+                <div><h4 style="font-size: 0.95rem; margin-bottom: 0.2rem; color: white;">Admin Système</h4><span style="font-size: 0.8rem; color: var(--gray-light);">Admin</span></div>
             </div>
+                <a href="../../View/FrontOffice/login.php" style="margin-left: auto; color: var(--danger);"><i class="fa-solid fa-arrow-right-from-bracket"></i></a>
         </aside>
 
         <main class="main-content">
@@ -70,32 +66,36 @@
 
             <section class="fade-in-up">
                 <div style="display: flex; justify-content: space-between; align-items: center;" class="mb-2">
-                    <h2>Gestion des Quiz (Questions & Choix)</h2>
-                    <button class="btn btn-primary"><i class="fa-solid fa-plus"></i> Nouveau Questionnaire</button>
+                    <h2>Contrôle de Messagerie</h2>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem;">
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fa-solid fa-message"></i></div>
+                        <div><h3 style="font-size: 1.5rem;">1,240</h3><p style="color: var(--gray); font-size: 0.9rem;">Messages Envoyés</p></div>
+                    </div>
                 </div>
 
                 <div class="card admin-card hover-zoom">
-                    <h3>Liste des Quiz actifs</h3>
+                    <h3>Historique et Conversations (Monitoring)</h3>
                     <table class="data-table mt-1">
                         <thead>
                             <tr>
-                                <th>Titre du Quiz</th>
-                                <th>Nb Questions</th>
-                                <th>Cible</th>
-                                <th>Statut</th>
+                                <th>Participants</th>
+                                <th>Lié à l'offre</th>
+                                <th>Dernier Echange</th>
+                                <th>Signalements</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
-                                <td>Quiz Maturité Numérique</td>
-                                <td>15</td>
-                                <td>Entreprises</td>
-                                <td><span class="badge success">Actif</span></td>
+                                <td>TechCorp SAS / Alice Martin</td>
+                                <td>#OFR-102</td>
+                                <td>Aujourd'hui 10:45</td>
+                                <td><span class="badge success">0</span></td>
                                 <td>
-                                    <button class="btn btn-outline btn-sm"><i class="fa-solid fa-eye"></i> Questions</button>
-                                    <button class="btn btn-outline btn-sm"><i class="fa-solid fa-pen"></i></button>
-                                    <button class="btn btn-outline btn-sm" style="color:var(--danger); border-color:var(--danger);"><i class="fa-solid fa-trash"></i></button>
+                                    <button class="btn btn-outline btn-sm"><i class="fa-solid fa-eye"></i> Historique</button>
                                 </td>
                             </tr>
                         </tbody>

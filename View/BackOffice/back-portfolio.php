@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
@@ -7,7 +7,7 @@
     <!-- Same CSS links as back-quiz.html to keep UI consistent -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../../css/style.css">
     <style>
         .sidebar { background: var(--dark); color: white; }
         .sidebar .menu-item { color: var(--gray-light); }
@@ -44,18 +44,18 @@
                 </div>
             </div>
             <div class="sidebar-menu">
-                <a href="back-utilisateur.html" class="menu-item"><i class="fa-solid fa-users"></i> Gestion Utilisateurs</a>
-                <a href="back-quiz.html" class="menu-item"><i class="fa-solid fa-list-check"></i> Gestion Quiz</a>
-                <a href="back-portfolio.html" class="menu-item active"><i class="fa-solid fa-folder-open"></i> Gestion Portfolios</a>
-                <a href="back-offres.html" class="menu-item"><i class="fa-solid fa-briefcase"></i> Gestion Offres</a>
-                <a href="back-certification.html" class="menu-item"><i class="fa-solid fa-award"></i> Gestion Certifications</a>
-                <a href="back-messagerie.html" class="menu-item"><i class="fa-solid fa-comments"></i> Gestion Messagerie</a>
+                <a href="back-utilisateur.php" class="menu-item"><i class="fa-solid fa-users"></i> Gestion Utilisateurs</a>
+                <a href="back-quiz.php" class="menu-item"><i class="fa-solid fa-list-check"></i> Gestion Quiz</a>
+                <a href="back-portfolio.php" class="menu-item active"><i class="fa-solid fa-folder-open"></i> Gestion Portfolios</a>
+                <a href="back-offres.php" class="menu-item"><i class="fa-solid fa-briefcase"></i> Gestion Offres</a>
+                <a href="back-certification.php" class="menu-item"><i class="fa-solid fa-award"></i> Gestion Certifications</a>
+                <a href="back-messagerie.php" class="menu-item"><i class="fa-solid fa-comments"></i> Gestion Messagerie</a>
             </div>
             <div class="user-profile-widget">
                 <div class="user-avatar">AD</div>
                 <div><h4 style="font-size: 0.95rem; margin-bottom: 0.2rem; color: white;">Admin Système</h4><span style="font-size: 0.8rem; color: var(--gray-light);">Admin</span></div>
             </div>
-                <a href="../login.html" style="margin-left: auto; color: var(--danger);"><i class="fa-solid fa-arrow-right-from-bracket"></i></a>
+                <a href="../../View/FrontOffice/login.php" style="margin-left: auto; color: var(--danger);"><i class="fa-solid fa-arrow-right-from-bracket"></i></a>
         </aside>
 
         <main class="main-content">

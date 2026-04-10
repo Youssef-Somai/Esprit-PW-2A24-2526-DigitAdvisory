@@ -1,0 +1,49 @@
+# ========================
+# SYSTEM FILES
+# ========================
+.DS_Store
+Thumbs.db
+
+# ========================
+# IDE / EDITORS (chacun a le sien)
+# ========================
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ========================
+# LOG FILES
+# ========================
+*.log
+
+# ========================
+# CACHE / TEMP (PHP)
+# ========================
+*.cache
+*.tmp
+*.bak
+
+# ========================
+# CONFIG LOCALE (TRÈS IMPORTANT EN GROUPE)
+# ========================
+.env
+config.local.php
+
+# ========================
+# DEPENDENCIES (si utilisées)
+# ========================
+node_modules/
+vendor/
+
+# ========================
+# UPLOADS / FICHIERS GÉNÉRÉS
+# ========================
+uploads/
+files/
+temp/
+
+# ========================
+# LOCK FILES
+# ========================
+*.lock

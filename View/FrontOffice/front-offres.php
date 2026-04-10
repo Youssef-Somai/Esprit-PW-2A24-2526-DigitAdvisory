@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
@@ -6,7 +6,7 @@
     <title>Espace Entreprise | Offres de Mission</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../../css/style.css">
     <style>
         body { background-color: #f1f5f9; }
         .dashboard-container { display: flex; min-height: 100vh; }
@@ -31,20 +31,20 @@
 <body>
     <div class="dashboard-container">
         <aside class="sidebar">
-            <div class="sidebar-header"><a href="../index.html" class="logo" style="text-decoration: none;"><i class="fa-solid fa-chart-pie text-primary"></i> Digit Advisory</a></div>
+            <div class="sidebar-header"><a href="index.php" class="logo" style="text-decoration: none;"><i class="fa-solid fa-chart-pie text-primary"></i> Digit Advisory</a></div>
             <div class="sidebar-menu">
-                <a href="front-entreprise-dashboard.html" class="menu-item"><i class="fa-solid fa-house"></i> Vue d'ensemble</a>
-                <a href="front-utilisateur.html" class="menu-item"><i class="fa-solid fa-building"></i> Profil Entreprise</a>
-                <a href="front-quiz.html" class="menu-item"><i class="fa-solid fa-list-check"></i> Questionnaire</a>
-                <a href="front-portfolio.html" class="menu-item"><i class="fa-solid fa-folder-open"></i> Mon Portfolio</a>
-                <a href="front-offres.html" class="menu-item active"><i class="fa-solid fa-briefcase"></i> Mes Offres de Mission</a>
-                <a href="front-certification.html" class="menu-item"><i class="fa-solid fa-award"></i> Certifications ISO</a>
-                <a href="front-messagerie.html" class="menu-item"><i class="fa-solid fa-comments"></i> Messagerie</a>
+                <a href="front-entreprise-dashboard.php" class="menu-item"><i class="fa-solid fa-house"></i> Vue d'ensemble</a>
+                <a href="front-utilisateur.php" class="menu-item"><i class="fa-solid fa-building"></i> Profil Entreprise</a>
+                <a href="front-quiz.php" class="menu-item"><i class="fa-solid fa-list-check"></i> Questionnaire</a>
+                <a href="front-portfolio.php" class="menu-item"><i class="fa-solid fa-folder-open"></i> Mon Portfolio</a>
+                <a href="front-offres.php" class="menu-item active"><i class="fa-solid fa-briefcase"></i> Mes Offres de Mission</a>
+                <a href="front-certification.php" class="menu-item"><i class="fa-solid fa-award"></i> Certifications ISO</a>
+                <a href="front-messagerie.php" class="menu-item"><i class="fa-solid fa-comments"></i> Messagerie</a>
             </div>
             <div class="user-profile-widget">
                 <div class="user-avatar">TC</div>
                 <div><h4 style="font-size: 0.95rem; margin-bottom: 0.2rem;">TechCorp SAS</h4><span style="font-size: 0.8rem; color: var(--gray);">Compte Entreprise</span></div>
-                <a href="../login.html" style="margin-left: auto; color: var(--danger);"><i class="fa-solid fa-arrow-right-from-bracket"></i></a>
+                <a href="login.php" style="margin-left: auto; color: var(--danger);"><i class="fa-solid fa-arrow-right-from-bracket"></i></a>
             </div>
         </aside>
 

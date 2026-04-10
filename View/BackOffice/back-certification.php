@@ -1,12 +1,12 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Back Office | Gestion Offres</title>
+    <title>Back Office | Gestion Certifications ISO</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../../css/style.css">
     <style>
         .sidebar { background: var(--dark); color: white; }
         .sidebar .menu-item { color: var(--gray-light); }
@@ -29,8 +29,7 @@
         .data-table th, .data-table td { padding: 1rem; text-align: left; border-bottom: 1px solid var(--gray-light); }
         .data-table th { color: var(--gray); font-weight: 500; }
         .badge { padding: 0.25rem 0.75rem; border-radius: var(--radius-full); font-size: 0.85rem; font-weight: 500; display: inline-block;}
-        .badge.success { background: rgba(16, 185, 129, 0.1); color: var(--success); }
-        .badge.warning { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
+        .badge.primary { background: rgba(37, 99, 235, 0.1); color: var(--primary); }
         .btn-sm { padding: 0.4rem 0.8rem; font-size: 0.85rem; }
     </style>
 </head>
@@ -43,18 +42,18 @@
                 </div>
             </div>
             <div class="sidebar-menu">
-                <a href="back-utilisateur.html" class="menu-item"><i class="fa-solid fa-users"></i> Gestion Utilisateurs</a>
-                <a href="back-quiz.html" class="menu-item"><i class="fa-solid fa-list-check"></i> Gestion Quiz</a>
-                <a href="back-portfolio.html" class="menu-item"><i class="fa-solid fa-folder-open"></i> Gestion Portfolios</a>
-                <a href="back-offres.html" class="menu-item active"><i class="fa-solid fa-briefcase"></i> Gestion Offres</a>
-                <a href="back-certification.html" class="menu-item"><i class="fa-solid fa-award"></i> Gestion Certifications</a>
-                <a href="back-messagerie.html" class="menu-item"><i class="fa-solid fa-comments"></i> Gestion Messagerie</a>
+                <a href="back-utilisateur.php" class="menu-item"><i class="fa-solid fa-users"></i> Gestion Utilisateurs</a>
+                <a href="back-quiz.php" class="menu-item"><i class="fa-solid fa-list-check"></i> Gestion Quiz</a>
+                <a href="back-portfolio.php" class="menu-item"><i class="fa-solid fa-folder-open"></i> Gestion Portfolios</a>
+                <a href="back-offres.php" class="menu-item"><i class="fa-solid fa-briefcase"></i> Gestion Offres</a>
+                <a href="back-certification.php" class="menu-item active"><i class="fa-solid fa-award"></i> Gestion Certifications</a>
+                <a href="back-messagerie.php" class="menu-item"><i class="fa-solid fa-comments"></i> Gestion Messagerie</a>
             </div>
             <div class="user-profile-widget">
                 <div class="user-avatar">AD</div>
                 <div><h4 style="font-size: 0.95rem; margin-bottom: 0.2rem; color: white;">Admin Système</h4><span style="font-size: 0.8rem; color: var(--gray-light);">Admin</span></div>
             </div>
-                <a href="../login.html" style="margin-left: auto; color: var(--danger);"><i class="fa-solid fa-arrow-right-from-bracket"></i></a>
+                <a href="../../View/FrontOffice/login.php" style="margin-left: auto; color: var(--danger);"><i class="fa-solid fa-arrow-right-from-bracket"></i></a>
         </aside>
 
         <main class="main-content">
@@ -65,40 +64,37 @@
 
             <section class="fade-in-up">
                 <div style="display: flex; justify-content: space-between; align-items: center;" class="mb-2">
-                    <h2>Modération Offres & Missions</h2>
+                    <h2>Gestion Certifications ISO & Critères</h2>
+                    <button class="btn btn-primary"><i class="fa-solid fa-plus"></i> Ajouter Certification</button>
                 </div>
 
                 <div class="card admin-card hover-zoom">
                     <table class="data-table">
                         <thead>
                             <tr>
-                                <th>ID Offre</th>
-                                <th>Entreprise</th>
+                                <th>Norme ISO</th>
                                 <th>Titre</th>
-                                <th>Nb Candidatures</th>
-                                <th>Statut</th>
+                                <th>Nb Critères Liés</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
-                                <td>#OFR-102</td>
-                                <td>TechCorp SAS</td>
-                                <td>Audit RGPD Complet</td>
-                                <td>3</td>
-                                <td><span class="badge success">En ligne</span></td>
+                                <td>ISO 27001</td>
+                                <td>Sécurité de l'Information</td>
+                                <td><span class="badge primary">4 critères de matching</span></td>
                                 <td>
-                                    <button class="btn btn-outline btn-sm" style="color:var(--danger); border-color:var(--danger);"><i class="fa-solid fa-trash"></i> Supprimer</button>
+                                    <button class="btn btn-outline btn-sm"><i class="fa-solid fa-pen"></i> Modifier Critères</button>
+                                    <button class="btn btn-outline btn-sm" style="color:var(--danger); border-color:var(--danger);"><i class="fa-solid fa-trash"></i></button>
                                 </td>
                             </tr>
                             <tr>
-                                <td>#OFR-103</td>
-                                <td>Startup XYZ</td>
-                                <td>Conseil Architecture Cloud</td>
-                                <td>0</td>
-                                <td><span class="badge warning">En attente modération</span></td>
+                                <td>ISO 9001</td>
+                                <td>Management de la Qualité</td>
+                                <td><span class="badge primary">2 critères de matching</span></td>
                                 <td>
-                                    <button class="btn btn-primary btn-sm"><i class="fa-solid fa-check"></i> Valider</button>
+                                    <button class="btn btn-outline btn-sm"><i class="fa-solid fa-pen"></i> Modifier Critères</button>
+                                    <button class="btn btn-outline btn-sm" style="color:var(--danger); border-color:var(--danger);"><i class="fa-solid fa-trash"></i></button>
                                 </td>
                             </tr>
                         </tbody>
