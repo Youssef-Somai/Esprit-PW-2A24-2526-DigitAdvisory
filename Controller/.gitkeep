@@ -1,1 +1,5 @@
- 
+if ($_POST['role'] == 'expert') {
+    // insert dans table expert
+} else {
+    // insert dans table entreprise
+} 

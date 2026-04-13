@@ -1,4 +1,35 @@
-﻿<!DOCTYPE html>
+﻿<?php
+session_start();
+require_once __DIR__ . '/../../config.php';
+require_once __DIR__ . '/../../Controller/utilisateur_controller.php';
+
+if (empty($_SESSION['user']['id_user'])) {
+    header('Location: login.php');
+    exit;
+}
+
+$controller = new UtilisateurController();
+$user = $controller->getUserById((int) $_SESSION['user']['id_user']);
+if (!$user) {
+    header('Location: login.php');
+    exit;
+}
+
+if (strtolower($user['role'] ?? '') !== 'expert') {
+    header('Location: ../FrontOffice/front-utilisateur.php');
+    exit;
+}
+
+$displayName = htmlspecialchars($user['prenom'] . ' ' . $user['nom']);
+$expertEmail = htmlspecialchars($user['email']);
+$nom = htmlspecialchars($user['nom'] ?? '');
+$prenom = htmlspecialchars($user['prenom'] ?? '');
+$domaine = htmlspecialchars($user['domaine'] ?? '');
+$niveauExperience = htmlspecialchars($user['niveau_experience'] ?? '');
+$tarifJournalier = htmlspecialchars($user['tarif_journalier'] ?? '');
+$avatarText = strtoupper(substr(trim($user['prenom'] ?: $user['email']), 0, 2));
+?>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
@@ -26,6 +57,8 @@
         .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 500; color: var(--dark); }
         .form-control { width: 100%; padding: 0.75rem 1rem; border: 1px solid var(--gray-light); border-radius: var(--radius); font-family: var(--font-main); font-size: 1rem; transition: var(--transition); outline: none; }
         .form-control:focus { border-color: var(--secondary); box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1); }
+        .form-control.error { border-color: #dc2626; box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1); }
+        .error-text { color: #dc2626; font-size: 0.85rem; margin-top: 0.35rem; min-height: 1.1rem; display: block; }
         .tag { display: inline-block; padding: 0.3rem 0.8rem; border-radius: var(--radius-full); font-size: 0.8rem; font-weight: 500; background: rgba(14,165,233,0.1); color: var(--secondary); margin-right: 0.5rem; margin-bottom: 0.5rem; }
     </style>
 </head>
@@ -42,8 +75,8 @@
                 <a href="front-expert-messagerie.php" class="menu-item"><i class="fa-solid fa-comments"></i> Messagerie</a>
             </div>
             <div class="user-profile-widget">
-                <div class="user-avatar">AL</div>
-                <div><h4 style="font-size: 0.95rem; margin-bottom: 0.2rem;">Alice Martin</h4><span style="font-size: 0.8rem; color: var(--gray);">Consultant Senior</span></div>
+                <div class="user-avatar"><?php echo $avatarText; ?></div>
+                <div><h4 style="font-size: 0.95rem; margin-bottom: 0.2rem;"><?php echo $displayName; ?></h4><span style="font-size: 0.8rem; color: var(--gray);">Consultant Expert</span></div>
                 <a href="login.php" style="margin-left: auto; color: var(--danger);"><i class="fa-solid fa-arrow-right-from-bracket"></i></a>
             </div>
         </aside>
@@ -51,74 +84,139 @@
         <main class="main-content">
             <div class="top-navbar">
                 <h2 style="margin: 0; font-size: 1.5rem;">Mon Profil Expert</h2>
-                <button class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Sauvegarder</button>
             </div>
-
             <section class="fade-in-up">
+                <?php if (isset($_GET['updated'])): ?>
+                    <div style="background-color: #d1fae5; color: #065f46; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; text-align: center; border: 1px solid #10b981; font-weight: 500;">
+                        Profil mis à jour avec succès.
+                    </div>
+                <?php endif; ?>
                 <div class="card hover-zoom">
                     <h3 style="margin-bottom: 1.5rem;"><i class="fa-solid fa-id-card text-secondary"></i> Informations Personnelles</h3>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
-                        <div class="form-group">
-                            <label>Nom complet</label>
-                            <input type="text" class="form-control" value="Alice Martin">
+                    <form action="../traitement/updateProfileUtilisateurTraitement.php" method="POST" onsubmit="return validateExpertProfileForm();" novalidate>
+                        <input type="hidden" name="id_user" value="<?= $user['id_user'] ?>">
+                        <input type="hidden" name="role" value="expert">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                            <div class="form-group">
+                                <label>Nom</label>
+                                <input type="text" name="nom" class="form-control" value="<?= $nom ?>">
+                                <span class="error-text" id="nom-error"></span>
+                            </div>
+                            <div class="form-group">
+                                <label>Prénom</label>
+                                <input type="text" name="prenom" class="form-control" value="<?= $prenom ?>">
+                                <span class="error-text" id="prenom-error"></span>
+                            </div>
+                            <div class="form-group">
+                                <label>Email professionnel</label>
+                                <input type="email" name="email" class="form-control" value="<?= $expertEmail ?>">
+                                <span class="error-text" id="email-error"></span>
+                            </div>
+                            <div class="form-group">
+                                <label>Domaine d'expertise</label>
+                                <input type="text" name="domaine" class="form-control" value="<?= $domaine ?>">
+                                <span class="error-text" id="domaine-error"></span>
+                            </div>
+                            <div class="form-group">
+                                <label>Niveau d'expérience</label>
+                                <input type="text" name="niveau_experience" class="form-control" value="<?= $niveauExperience ?>">
+                                <span class="error-text" id="niveau_experience-error"></span>
+                            </div>
+                            <div class="form-group">
+                                <label>Tarif journalier (€)</label>
+                                <input type="number" name="tarif_journalier" class="form-control" value="<?= $tarifJournalier ?>">
+                                <span class="error-text" id="tarif_journalier-error"></span>
+                            </div>
+                            <div class="form-group" style="grid-column: span 2;">
+                                <label>Modifier le mot de passe</label>
+                                <input type="password" name="password" class="form-control" placeholder="Laisser vide pour conserver le mot de passe actuel">
+                                <span class="error-text" id="password-error"></span>
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label>Email professionnel</label>
-                            <input type="email" class="form-control" value="alice.martin@expert.fr">
+                        <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                            <button type="submit" class="btn btn-primary pulse-glow"><i class="fa-solid fa-pen"></i> Modifier le profil</button>
                         </div>
-                        <div class="form-group">
-                            <label>Téléphone</label>
-                            <input type="tel" class="form-control" value="+33 6 12 34 56 78">
-                        </div>
-                        <div class="form-group">
-                            <label>Localisation</label>
-                            <input type="text" class="form-control" value="Paris, France">
-                        </div>
-                    </div>
+                    </form>
                 </div>
 
                 <div class="card hover-zoom">
-                    <h3 style="margin-bottom: 1rem;"><i class="fa-solid fa-star text-secondary"></i> Domaines d'Expertise</h3>
-                    <div style="margin-bottom: 1rem;">
-                        <span class="tag">Cybersécurité</span>
-                        <span class="tag">ISO 27001</span>
-                        <span class="tag">RGPD</span>
-                        <span class="tag">Audit Cloud</span>
-                        <span class="tag">Management Qualité</span>
-                    </div>
-                    <div class="form-group">
-                        <label>Ajouter un domaine</label>
-                        <div style="display: flex; gap: 0.5rem;">
-                            <input type="text" class="form-control" placeholder="Ex: Gestion de Projet...">
-                            <button class="btn btn-outline"><i class="fa-solid fa-plus"></i></button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card hover-zoom">
-                    <h3 style="margin-bottom: 1rem;"><i class="fa-solid fa-file-lines text-secondary"></i> Bio & Expérience</h3>
-                    <div class="form-group">
-                        <label>Résumé professionnel</label>
-                        <textarea class="form-control" rows="4" style="resize: vertical;">Consultante Senior avec 8 ans d'expérience en cybersécurité et mise en conformité ISO. Spécialisée dans l'accompagnement des PME vers la certification ISO 27001 et la conformité RGPD.</textarea>
-                    </div>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
-                        <div class="form-group">
-                            <label>Années d'expérience</label>
-                            <input type="number" class="form-control" value="8">
-                        </div>
-                        <div class="form-group">
-                            <label>TJM souhaité (€)</label>
-                            <input type="number" class="form-control" value="650">
-                        </div>
-                    </div>
-                </div>
-
-                <div style="display: flex; gap: 1rem;">
-                    <button class="btn btn-primary pulse-glow"><i class="fa-solid fa-floppy-disk"></i> Sauvegarder les modifications</button>
-                    <button class="btn btn-outline" style="color:var(--danger); border-color:var(--danger);"><i class="fa-solid fa-trash"></i> Désactiver mon compte</button>
+                    <h3 style="margin-bottom: 1rem;"><i class="fa-solid fa-trash text-danger"></i> Supprimer le compte</h3>
+                    <p style="color: var(--gray); margin-bottom: 1rem;">Cette action supprimera définitivement votre compte expert.</p>
+                    <form action="../traitement/deleteProfileUtilisateurTraitement.php" method="POST" onsubmit="return confirm('Voulez-vous vraiment supprimer votre compte ?');">
+                        <input type="hidden" name="id_user" value="<?= $user['id_user'] ?>">
+                        <button type="submit" class="btn btn-outline" style="color: var(--danger); border-color: var(--danger);"><i class="fa-solid fa-trash"></i> Supprimer le compte</button>
+                    </form>
                 </div>
             </section>
         </main>
     </div>
+    <script>
+        function clearExpertErrors() {
+            document.querySelectorAll('.error-text').forEach(el => el.textContent = '');
+            document.querySelectorAll('.form-control').forEach(el => el.classList.remove('error'));
+        }
+
+        function showExpertError(input, message) {
+            input.classList.add('error');
+            const errorEl = document.getElementById(input.name + '-error');
+            if (errorEl) {
+                errorEl.textContent = message;
+            }
+        }
+
+        function validateExpertProfileForm() {
+            clearExpertErrors();
+            const form = document.querySelector('form[action="../traitement/updateProfileUtilisateurTraitement.php"]');
+            let valid = true;
+
+            const fields = [
+                { name: 'nom', label: 'Nom' },
+                { name: 'prenom', label: 'Prénom' },
+                { name: 'email', label: 'Email professionnel', type: 'email' },
+                { name: 'domaine', label: "Domaine d'expertise" },
+                { name: 'niveau_experience', label: "Niveau d'expérience" },
+                { name: 'tarif_journalier', label: 'Tarif journalier', type: 'number' }
+            ];
+
+            fields.forEach(field => {
+                const input = form.elements[field.name];
+                if (!input) {
+                    return;
+                }
+                const value = input.value.trim();
+
+                if (value === '') {
+                    showExpertError(input, `${field.label} est requis.`);
+                    valid = false;
+                    return;
+                }
+
+                if (field.type === 'email') {
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    if (!emailRegex.test(value)) {
+                        showExpertError(input, 'Email professionnel invalide.');
+                        valid = false;
+                    }
+                }
+
+                if (field.type === 'number') {
+                    const number = parseFloat(value);
+                    if (isNaN(number) || number <= 0) {
+                        showExpertError(input, 'Tarif journalier doit être un nombre positif.');
+                        valid = false;
+                    }
+                }
+            });
+
+            if (!valid) {
+                const firstError = form.querySelector('.form-control.error');
+                if (firstError) {
+                    firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+
+            return valid;
+        }
+    </script>
 </body>
 </html>

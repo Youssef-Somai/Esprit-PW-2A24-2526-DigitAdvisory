@@ -1,3 +1,4 @@
+<?php session_start(); ?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -23,7 +24,9 @@
             box-shadow: var(--shadow-lg);
             width: 100%;
             max-width: 500px;
-            overflow: hidden;
+            max-height: 95vh;
+            overflow-y: auto;
+            overflow-x: hidden;
             position: relative;
         }
 
@@ -64,21 +67,15 @@
         .auth-body {
             padding: 2rem;
             position: relative;
-            min-height: 400px;
         }
 
         .auth-form {
-            position: absolute;
-            top: 2rem;
-            left: 2rem;
-            right: 2rem;
-            opacity: 0;
-            visibility: hidden;
-            transform: translateX(20px);
+            display: none;
             transition: all 0.4s ease;
         }
 
         .auth-form.active {
+            display: block;
             opacity: 1;
             visibility: visible;
             transform: translateX(0);
@@ -103,12 +100,25 @@
             font-family: var(--font-main);
             font-size: 1rem;
             transition: var(--transition);
+            box-sizing: border-box;
         }
 
         .form-control:focus {
             outline: none;
             border-color: var(--primary);
             box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .form-control.error {
+            border-color: #dc2626;
+            box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12);
+        }
+
+        .error-text {
+            color: #dc2626;
+            font-size: 0.85rem;
+            margin-top: 0.35rem;
+            display: block;
         }
 
         .role-selector {
@@ -150,7 +160,6 @@
             margin-top: 1rem;
         }
 
-        /* Back to home */
         .back-link {
             position: absolute;
             top: 2rem;
@@ -161,9 +170,16 @@
             align-items: center;
             gap: 0.5rem;
             z-index: 10;
+            text-decoration: none;
         }
+
         .back-link:hover {
             color: var(--primary-hover);
+        }
+
+        #expert-fields,
+        #entreprise-fields {
+            margin-top: 1rem;
         }
     </style>
 </head>
@@ -187,32 +203,54 @@
             </div>
 
             <div class="auth-body">
-                <!-- Login Form -->
-                <form id="login" class="auth-form active" action="dashboard.html" method="GET" onsubmit="return handleLogin(event)">
+
+                <?php if (isset($_SESSION['register_success']) && $_SESSION['register_success'] === true): ?>
+                    <div style="background-color: #d1fae5; color: #065f46; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; text-align: center; border: 1px solid #10b981; font-weight: 500;">
+                        Votre compte a bien été créé ! Vous pouvez maintenant vous connecter.
+                    </div>
+                    <?php unset($_SESSION['register_success']); ?>
+                <?php endif; ?>
+                <?php if (isset($_SESSION['login_error'])): ?>
+                    <div class="login-error" style="background-color: #fee2e2; color: #991b1b; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; text-align: center; border: 1px solid #fca5a5; font-weight: 500;">
+                        <?php
+                            if ($_SESSION['login_error'] == 1) {
+                                echo 'Email ou mot de passe incorrect.';
+                            } elseif ($_SESSION['login_error'] == 2) {
+                                echo 'Ce compte est désactivé.';
+                            } else {
+                                echo 'Une erreur est survenue, veuillez réessayer.';
+                            }
+                            unset($_SESSION['login_error']);
+                        ?>
+                    </div>
+                <?php endif; ?>
+
+                <!-- LOGIN -->
+                <form id="login" class="auth-form active" action="../traitement/loginTraitement.php" method="POST" onsubmit="return validateLoginForm();" novalidate>
                     <div class="form-group">
                         <label for="login-email">Email professionnel</label>
-                        <input type="email" id="login-email" class="form-control" placeholder="exemple@entreprise.com" required>
+                        <input type="email" name="email" id="login-email" class="form-control" placeholder="exemple@entreprise.com">
+                        <span class="error-text" id="login-email-error"></span>
                     </div>
+
                     <div class="form-group">
                         <label for="login-password">Mot de passe</label>
-                        <input type="password" id="login-password" class="form-control" placeholder="••••••••" required>
+                        <input type="password" name="password" id="login-password" class="form-control" placeholder="••••••••">
+                        <span class="error-text" id="login-password-error"></span>
                     </div>
+
                     <div style="display: flex; justify-content: space-between; margin-bottom: 1.5rem; font-size: 0.9rem;">
                         <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
                             <input type="checkbox"> Se souvenir de moi
                         </label>
                         <a href="#" class="text-primary">Mot de passe oublié ?</a>
                     </div>
+
                     <button type="submit" class="btn btn-primary btn-block">Se connecter</button>
-                    <!-- Role hidden selector for demo logic -->
-                    <select id="login-role-demo" class="form-control mt-1" style="font-size:0.8rem; background:#f8fafc;">
-                        <option value="entreprise">Démo: Se connecter en tant qu'Entreprise</option>
-                        <option value="expert">Démo: Se connecter en tant qu'Expert</option>
-                    </select>
                 </form>
 
-                <!-- Register Form -->
-                <form id="register" class="auth-form" action="dashboard.html" method="GET" onsubmit="return handleLogin(event)">
+                <!-- REGISTER -->
+<form id="register" class="auth-form" action="../traitement/createUtilisateurTraitement.php" method="POST" onsubmit="return validateRegisterForm();" novalidate>
                     <div class="role-selector">
                         <div class="role-option selected" data-role="entreprise" onclick="selectRole('entreprise')">
                             <i class="fa-regular fa-building"></i>
@@ -223,22 +261,77 @@
                             Expert
                         </div>
                     </div>
-                    
-                    <input type="hidden" id="register-role" value="entreprise">
+
+                    <input type="hidden" name="role" id="register-role" value="entreprise">
 
                     <div class="form-group">
-                        <label for="reg-name" id="label-name">Nom de l'entreprise</label>
-                        <input type="text" id="reg-name" class="form-control" placeholder="Entrez le nom" required>
-                    </div>
-                    <div class="form-group">
                         <label for="reg-email">Email</label>
-                        <input type="email" id="reg-email" class="form-control" placeholder="exemple@domaine.com" required>
+                        <input type="email" name="email" id="reg-email" class="form-control" placeholder="exemple@domaine.com">
+                        <span class="error-text" id="error-reg-email"></span>
                     </div>
+
                     <div class="form-group">
                         <label for="reg-password">Mot de passe</label>
-                        <input type="password" id="reg-password" class="form-control" placeholder="Créez un mot de passe" required>
+                        <input type="password" name="password" id="reg-password" class="form-control" placeholder="Créez un mot de passe">
+                        <span class="error-text" id="error-reg-password"></span>
                     </div>
+
+                    <!-- CHAMPS ENTREPRISE -->
+                    <div id="entreprise-fields">
+                        <div class="form-group">
+                            <label for="nom_entreprise">Nom de l'entreprise</label>
+                            <input type="text" name="nom_entreprise" id="nom_entreprise" class="form-control" placeholder="Nom de l'entreprise" maxlength="10" pattern="[A-Za-zÀ-ÖØ-öø-ÿ ]*">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="secteur_activite">Secteur d'activité</label>
+                            <input type="text" name="secteur_activite" id="secteur_activite" class="form-control" placeholder="Secteur d'activité" maxlength="10" pattern="[A-Za-zÀ-ÖØ-öø-ÿ ]*">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="adresse">Adresse</label>
+                            <input type="text" name="adresse" id="adresse" class="form-control" placeholder="Adresse complète">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="telephone">Téléphone</label>
+                            <input type="text" name="telephone" id="telephone" class="form-control" placeholder="Téléphone" inputmode="numeric" maxlength="6">
+                            <span class="error-text" id="error-telephone"></span>
+                        </div>
+                    </div>
+
+                    <!-- CHAMPS EXPERT -->
+                    <div id="expert-fields" style="display:none;">
+                        <div class="form-group">
+                            <label for="nom">Nom</label>
+                            <input type="text" name="nom" id="nom" class="form-control" placeholder="Nom" maxlength="10" pattern="[A-Za-zÀ-ÖØ-öø-ÿ ]*">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="prenom">Prénom</label>
+                            <input type="text" name="prenom" id="prenom" class="form-control" placeholder="Prénom" maxlength="10" pattern="[A-Za-zÀ-ÖØ-öø-ÿ ]*">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="domaine">Domaine</label>
+                            <input type="text" name="domaine" id="domaine" class="form-control" placeholder="Domaine d'expertise" maxlength="10" pattern="[A-Za-zÀ-ÖØ-öø-ÿ ]*">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="niveau_experience">Niveau d'expérience</label>
+                            <input type="text" name="niveau_experience" id="niveau_experience" class="form-control" placeholder="Ex: Junior, Senior..." maxlength="10" pattern="[A-Za-zÀ-ÖØ-öø-ÿ ]*">
+                            <span class="error-text" id="error-niveau_experience"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="tarif_journalier">Tarif journalier</label>
+                            <input type="text" name="tarif_journalier" id="tarif_journalier" class="form-control" placeholder="Tarif journalier" inputmode="numeric" maxlength="6">
+                            <span class="error-text" id="error-tarif_journalier"></span>
+                        </div>
+                    </div>
+
                     <button type="submit" class="btn btn-primary btn-block">Créer mon compte</button>
+
                     <p style="text-align: center; margin-top: 1rem; font-size: 0.8rem; color: var(--gray);">
                         En créant un compte, vous acceptez nos <a href="#" class="text-primary">Conditions d'utilisation</a>.
                     </p>
@@ -248,63 +341,303 @@
     </div>
 
     <script>
-        // Tab switching logic
         const tabs = document.querySelectorAll('.auth-tab');
         const forms = document.querySelectorAll('.auth-form');
 
         tabs.forEach(tab => {
             tab.addEventListener('click', () => {
-                // Remove active classes
                 tabs.forEach(t => t.classList.remove('active'));
                 forms.forEach(f => f.classList.remove('active'));
 
-                // Add active to current
                 tab.classList.add('active');
                 const targetId = tab.getAttribute('data-target');
                 document.getElementById(targetId).classList.add('active');
             });
         });
 
-        // Check hash for direct register link
-        if(window.location.hash === '#register') {
+        if (window.location.hash === '#register') {
             document.querySelector('[data-target="register"]').click();
         }
 
-        // Role selection logic
+        if (document.querySelector('.login-error')) {
+            document.querySelector('[data-target="login"]').click();
+        }
+
         function selectRole(role) {
             document.querySelectorAll('.role-option').forEach(el => el.classList.remove('selected'));
             document.querySelector(`.role-option[data-role="${role}"]`).classList.add('selected');
+
             document.getElementById('register-role').value = role;
 
-            const labelName = document.getElementById('label-name');
-            if(role === 'entreprise') {
-                labelName.textContent = "Nom de l'entreprise";
+            if (role === 'expert') {
+                document.getElementById('expert-fields').style.display = 'block';
+                document.getElementById('entreprise-fields').style.display = 'none';
             } else {
-                labelName.textContent = "Nom complet de l'Expert";
+                document.getElementById('expert-fields').style.display = 'none';
+                document.getElementById('entreprise-fields').style.display = 'block';
             }
         }
 
-        // Handle Form Submission for Demo
-        function handleLogin(e) {
-            e.preventDefault();
-            // Determine role to redirect to appropriate dashboard context
-            const formId = e.target.id;
-            let role = 'entreprise';
-            
-            if(formId === 'login') {
-                role = document.getElementById('login-role-demo').value;
-            } else {
-                role = document.getElementById('register-role').value;
+        function clearRegisterErrors() {
+            document.querySelectorAll('.error-text').forEach(el => el.textContent = '');
+            document.querySelectorAll('#register .form-control').forEach(el => el.classList.remove('error'));
+        }
+
+        function showRegisterError(input, message) {
+            if (!input) return;
+            input.classList.add('error');
+            const id = input.id ? `error-${input.id}` : null;
+            let errorEl = id ? document.getElementById(id) : null;
+
+            if (!errorEl) {
+                errorEl = document.createElement('span');
+                errorEl.className = 'error-text';
+                if (id) errorEl.id = id;
+                input.insertAdjacentElement('afterend', errorEl);
+            }
+            errorEl.textContent = message;
+        }
+
+        function showLoginError(input, message) {
+            if (!input) return;
+            input.classList.add('error');
+            const errorEl = document.getElementById(`login-${input.id}-error`);
+            if (errorEl) {
+                errorEl.textContent = message;
+            }
+        }
+
+        function clearLoginErrors() {
+            document.querySelectorAll('#login .error-text').forEach(el => el.textContent = '');
+            document.querySelectorAll('#login .form-control').forEach(el => el.classList.remove('error'));
+        }
+
+        function validateLoginForm() {
+            clearLoginErrors();
+            const emailField = document.getElementById('login-email');
+            const passwordField = document.getElementById('login-password');
+            let valid = true;
+            const email = emailField.value.trim();
+            const password = passwordField.value.trim();
+
+            if (email === '') {
+                showLoginError(emailField, 'L’email est requis.');
+                valid = false;
+            } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                showLoginError(emailField, 'Veuillez entrer un email valide.');
+                valid = false;
             }
 
-            // In a real app this would be server side, for now we just append to URL params or redirect
-            if(role === 'expert') {
-                window.location.href = 'front-expert-dashboard.php';
-            } else {
-                window.location.href = 'front-entreprise-dashboard.php';
+            if (password === '') {
+                showLoginError(passwordField, 'Le mot de passe est requis.');
+                valid = false;
             }
-            return false;
+
+            return valid;
         }
+
+        function attachRegisterFieldListeners() {
+            const fields = document.querySelectorAll('#register .form-control');
+            fields.forEach(field => {
+                field.addEventListener('input', () => {
+                    if (field.classList.contains('error')) {
+                        field.classList.remove('error');
+                        const errorEl = document.getElementById(`error-${field.id}`);
+                        if (errorEl) {
+                            errorEl.textContent = '';
+                        }
+                    }
+                });
+            });
+
+            const nameFields = [
+                document.getElementById('nom_entreprise'),
+                document.getElementById('secteur_activite'),
+                document.getElementById('nom'),
+                document.getElementById('prenom'),
+                document.getElementById('domaine'),
+                document.getElementById('niveau_experience')
+            ];
+            nameFields.forEach(field => {
+                if (!field) return;
+                field.addEventListener('input', () => {
+                    field.value = field.value.replace(/[^A-Za-zÀ-ÖØ-öø-ÿ ]/g, '').slice(0, 10);
+                });
+            });
+
+            const phoneField = document.getElementById('telephone');
+            if (phoneField) {
+                phoneField.addEventListener('input', () => {
+                    phoneField.value = phoneField.value.replace(/[^0-9]/g, '').slice(0, 6);
+                });
+            }
+
+            const tarifField = document.getElementById('tarif_journalier');
+            if (tarifField) {
+                tarifField.addEventListener('input', () => {
+                    tarifField.value = tarifField.value.replace(/[^0-9]/g, '').slice(0, 6);
+                });
+            }
+        }
+
+        function validateRegisterForm() {
+            clearRegisterErrors();
+
+            const roleInput = document.getElementById('register-role');
+            const selectedRoleOption = document.querySelector('.role-option.selected');
+            if (selectedRoleOption) {
+                roleInput.value = selectedRoleOption.dataset.role;
+            }
+            const role = roleInput.value;
+            const emailField = document.getElementById('reg-email');
+            const passwordField = document.getElementById('reg-password');
+            const email = emailField.value.trim();
+            const password = passwordField.value.trim();
+            let valid = true;
+
+            if (email === '') {
+                showRegisterError(emailField, 'L’email est requis.');
+                valid = false;
+            } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                showRegisterError(emailField, 'Veuillez entrer un email valide.');
+                valid = false;
+            }
+
+            if (password.length < 6) {
+                showRegisterError(passwordField, 'Le mot de passe doit contenir au moins 6 caractères.');
+                valid = false;
+            }
+
+            const checkLength = (field, fieldName, max = 50) => {
+                const value = field.value.trim();
+                if (value.length > max) {
+                    showRegisterError(field, `${fieldName} ne doit pas dépasser ${max} caractères.`);
+                    valid = false;
+                    return false;
+                }
+                return true;
+            };
+
+            if (role === 'expert') {
+                const nom = document.getElementById('nom');
+                const prenom = document.getElementById('prenom');
+                const domaine = document.getElementById('domaine');
+                const niveau = document.getElementById('niveau_experience');
+                const tarif = document.getElementById('tarif_journalier');
+                const onlyLettersRegex = /^[A-Za-zÀ-ÖØ-öø-ÿ ]+$/;
+
+                if (nom.value.trim() === '') {
+                    showRegisterError(nom, 'Le nom est requis.');
+                    valid = false;
+                } else if (!onlyLettersRegex.test(nom.value.trim())) {
+                    showRegisterError(nom, 'Le nom ne doit contenir que des lettres.');
+                    valid = false;
+                } else if (nom.value.trim().length > 10) {
+                    showRegisterError(nom, 'Le nom doit contenir au maximum 10 caractères.');
+                    valid = false;
+                }
+
+                if (prenom.value.trim() === '') {
+                    showRegisterError(prenom, 'Le prénom est requis.');
+                    valid = false;
+                } else if (!onlyLettersRegex.test(prenom.value.trim())) {
+                    showRegisterError(prenom, 'Le prénom ne doit contenir que des lettres.');
+                    valid = false;
+                } else if (prenom.value.trim().length > 10) {
+                    showRegisterError(prenom, 'Le prénom doit contenir au maximum 10 caractères.');
+                    valid = false;
+                }
+
+                if (domaine.value.trim() === '') {
+                    showRegisterError(domaine, 'Le domaine est requis.');
+                    valid = false;
+                } else if (!onlyLettersRegex.test(domaine.value.trim())) {
+                    showRegisterError(domaine, 'Le domaine ne doit contenir que des lettres.');
+                    valid = false;
+                } else if (domaine.value.trim().length > 10) {
+                    showRegisterError(domaine, 'Le domaine doit contenir au maximum 10 caractères.');
+                    valid = false;
+                }
+
+                if (niveau.value.trim() === '') {
+                    showRegisterError(niveau, 'Le niveau d’expérience est requis.');
+                    valid = false;
+                } else if (!onlyLettersRegex.test(niveau.value.trim())) {
+                    showRegisterError(niveau, 'Le niveau d’expérience ne doit contenir que des lettres.');
+                    valid = false;
+                } else if (niveau.value.trim().length > 10) {
+                    showRegisterError(niveau, 'Le niveau d’expérience doit contenir au maximum 10 caractères.');
+                    valid = false;
+                }
+
+                if (tarif.value.trim() === '') {
+                    showRegisterError(tarif, 'Le tarif journalier est requis.');
+                    valid = false;
+                } else if (!/^\d+$/.test(tarif.value.trim())) {
+                    showRegisterError(tarif, 'Le tarif journalier doit contenir uniquement des chiffres.');
+                    valid = false;
+                }
+            }
+
+            if (role === 'entreprise') {
+                const nomEntreprise = document.getElementById('nom_entreprise');
+                const secteur = document.getElementById('secteur_activite');
+                const adresse = document.getElementById('adresse');
+                const telephone = document.getElementById('telephone');
+
+                const onlyLettersRegex = /^[A-Za-zÀ-ÖØ-öø-ÿ ]+$/;
+
+                if (nomEntreprise.value.trim() === '') {
+                    showRegisterError(nomEntreprise, 'Le nom de l’entreprise est requis.');
+                    valid = false;
+                } else if (!onlyLettersRegex.test(nomEntreprise.value.trim())) {
+                    showRegisterError(nomEntreprise, 'Le nom de l’entreprise ne doit contenir que des lettres.');
+                    valid = false;
+                } else if (nomEntreprise.value.trim().length > 10) {
+                    showRegisterError(nomEntreprise, 'Le nom de l’entreprise doit contenir au maximum 10 caractères.');
+                    valid = false;
+                }
+
+                if (secteur.value.trim() === '') {
+                    showRegisterError(secteur, 'Le secteur d’activité est requis.');
+                    valid = false;
+                } else if (!onlyLettersRegex.test(secteur.value.trim())) {
+                    showRegisterError(secteur, 'Le secteur d’activité ne doit contenir que des lettres.');
+                    valid = false;
+                } else if (secteur.value.trim().length > 10) {
+                    showRegisterError(secteur, 'Le secteur d’activité doit contenir au maximum 10 caractères.');
+                    valid = false;
+                }
+
+                if (adresse.value.trim() === '') {
+                    showRegisterError(adresse, 'L’adresse est requise.');
+                    valid = false;
+                }
+
+                if (telephone.value.trim() === '') {
+                    showRegisterError(telephone, 'Le téléphone est requis.');
+                    valid = false;
+                } else {
+                    const telValue = telephone.value.trim();
+                    if (!/^\d+$/.test(telValue)) {
+                        showRegisterError(telephone, 'Le téléphone doit contenir uniquement des chiffres.');
+                        valid = false;
+                    } else if (telValue.length > 6) {
+                        showRegisterError(telephone, 'Le téléphone ne doit pas dépasser 6 chiffres.');
+                        valid = false;
+                    }
+                }
+
+                checkLength(nomEntreprise, 'Nom de l’entreprise');
+                checkLength(secteur, 'Secteur d’activité');
+                checkLength(adresse, 'Adresse');
+            }
+
+            return valid;
+        }
+
+        attachRegisterFieldListeners();
+
     </script>
 </body>
 </html>

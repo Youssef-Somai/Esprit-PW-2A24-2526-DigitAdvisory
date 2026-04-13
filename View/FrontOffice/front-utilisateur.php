@@ -1,4 +1,34 @@
-﻿<!DOCTYPE html>
+﻿<?php
+session_start();
+require_once __DIR__ . '/../../config.php';
+require_once __DIR__ . '/../../Controller/utilisateur_controller.php';
+
+if (empty($_SESSION['user']['id_user'])) {
+    header('Location: login.php');
+    exit;
+}
+
+$controller = new UtilisateurController();
+$user = $controller->getUserById((int) $_SESSION['user']['id_user']);
+if (!$user) {
+    header('Location: login.php');
+    exit;
+}
+
+if (strtolower($user['role'] ?? '') === 'expert') {
+    header('Location: front-expert-profil.php');
+    exit;
+}
+
+$displayName = htmlspecialchars($user['nom_entreprise'] ?: ($user['prenom'] ? $user['prenom'] . ' ' . $user['nom'] : $user['email']));
+$companyEmail = htmlspecialchars($user['email']);
+$companyName = htmlspecialchars($user['nom_entreprise'] ?? '');
+$sector = htmlspecialchars($user['secteur_activite'] ?? '');
+$address = htmlspecialchars($user['adresse'] ?? '');
+$telephone = htmlspecialchars($user['telephone'] ?? '');
+$avatarText = strtoupper(substr(trim($user['nom_entreprise'] ?: $user['email']), 0, 2));
+?>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
@@ -42,8 +72,8 @@
                 <a href="front-messagerie.php" class="menu-item"><i class="fa-solid fa-comments"></i> Messagerie</a>
             </div>
             <div class="user-profile-widget">
-                <div class="user-avatar">TC</div>
-                <div><h4 style="font-size: 0.95rem; margin-bottom: 0.2rem;">TechCorp SAS</h4><span style="font-size: 0.8rem; color: var(--gray);">Compte Entreprise</span></div>
+                <div class="user-avatar"><?php echo $avatarText; ?></div>
+                <div><h4 style="font-size: 0.95rem; margin-bottom: 0.2rem;"><?php echo $displayName; ?></h4><span style="font-size: 0.8rem; color: var(--gray);">Compte Entreprise</span></div>
                 <a href="login.php" style="margin-left: auto; color: var(--danger);"><i class="fa-solid fa-arrow-right-from-bracket"></i></a>
             </div>
         </aside>
@@ -51,62 +81,56 @@
         <main class="main-content">
             <div class="top-navbar">
                 <h2 style="margin: 0; font-size: 1.5rem;">Profil de l'Entreprise</h2>
-                <button class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Sauvegarder</button>
             </div>
             <section class="fade-in-up">
+                <?php if (isset($_GET['updated'])): ?>
+                    <div style="background-color: #d1fae5; color: #065f46; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; text-align: center; border: 1px solid #10b981; font-weight: 500;">
+                        Profil mis à jour avec succès.
+                    </div>
+                <?php endif; ?>
                 <div class="card hover-zoom">
                     <h3 style="margin-bottom: 1.5rem;"><i class="fa-solid fa-building text-primary"></i> Informations de l'Entreprise</h3>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
-                        <div class="form-group">
-                            <label>Raison Sociale</label>
-                            <input type="text" class="form-control" value="TechCorp SAS">
+                    <form action="../traitement/updateProfileUtilisateurTraitement.php" method="POST">
+                        <input type="hidden" name="id_user" value="<?= $user['id_user'] ?>">
+                        <input type="hidden" name="role" value="entreprise">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                            <div class="form-group">
+                                <label>Raison Sociale</label>
+                                <input type="text" name="nom_entreprise" class="form-control" value="<?= $companyName ?>" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Email de contact</label>
+                                <input type="email" name="email" class="form-control" value="<?= $companyEmail ?>" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Secteur d'Activité</label>
+                                <input type="text" name="secteur_activite" class="form-control" value="<?= $sector ?>" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Téléphone</label>
+                                <input type="text" name="telephone" class="form-control" value="<?= $telephone ?>">
+                            </div>
+                            <div class="form-group">
+                                <label>Adresse</label>
+                                <input type="text" name="adresse" class="form-control" value="<?= $address ?>" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Modifier le mot de passe</label>
+                                <input type="password" name="password" class="form-control" placeholder="Laisser vide pour conserver le mot de passe actuel">
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label>Email de contact</label>
-                            <input type="email" class="form-control" value="contact@techcorp.com">
+                        <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                            <button type="submit" class="btn btn-primary pulse-glow"><i class="fa-solid fa-pen"></i> Modifier le profil</button>
                         </div>
-                        <div class="form-group">
-                            <label>Secteur d'Activité</label>
-                            <select class="form-control">
-                                <option selected>Technologies de l'Information</option>
-                                <option>Finance & Banque</option>
-                                <option>Santé</option>
-                                <option>Industrie</option>
-                                <option>Commerce</option>
-                                <option>Autre</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Taille de l'entreprise</label>
-                            <select class="form-control">
-                                <option>1 - 10 employés</option>
-                                <option selected>11 - 50 employés</option>
-                                <option>51 - 200 employés</option>
-                                <option>200+ employés</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Numéro SIRET</label>
-                            <input type="text" class="form-control" value="123 456 789 00012">
-                        </div>
-                        <div class="form-group">
-                            <label>Adresse</label>
-                            <input type="text" class="form-control" value="45 Rue de la Tech, 75008 Paris">
-                        </div>
-                    </div>
+                    </form>
                 </div>
-
                 <div class="card hover-zoom">
-                    <h3 style="margin-bottom: 1rem;"><i class="fa-solid fa-file-lines text-primary"></i> Description de l'Entreprise</h3>
-                    <div class="form-group">
-                        <label>Présentation</label>
-                        <textarea class="form-control" rows="4" style="resize: vertical;">TechCorp SAS est une entreprise spécialisée dans le développement de solutions Cloud innovantes. Nous recherchons régulièrement des experts pour nous accompagner dans nos démarches de certification et d'audit de sécurité.</textarea>
-                    </div>
-                </div>
-
-                <div style="display: flex; gap: 1rem;">
-                    <button class="btn btn-primary pulse-glow"><i class="fa-solid fa-floppy-disk"></i> Mettre à jour le profil</button>
-                    <button class="btn btn-outline" style="color:var(--danger); border-color:var(--danger);"><i class="fa-solid fa-trash"></i> Désactiver le compte</button>
+                    <h3 style="margin-bottom: 1rem;"><i class="fa-solid fa-trash text-danger"></i> Supprimer le compte</h3>
+                    <p style="color: var(--gray); margin-bottom: 1rem;">Cette action supprimera définitivement votre compte entreprise.</p>
+                    <form action="../traitement/deleteProfileUtilisateurTraitement.php" method="POST" onsubmit="return confirm('Voulez-vous vraiment supprimer votre compte ?');">
+                        <input type="hidden" name="id_user" value="<?= $user['id_user'] ?>">
+                        <button type="submit" class="btn btn-outline" style="color: var(--danger); border-color: var(--danger);"><i class="fa-solid fa-trash"></i> Supprimer le compte</button>
+                    </form>
                 </div>
             </section>
         </main>

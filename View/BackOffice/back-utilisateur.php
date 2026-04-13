@@ -1,4 +1,16 @@
-﻿<!DOCTYPE html>
+﻿<?php
+session_start();
+
+if (!isset($_SESSION['user']['id_user']) || strtolower($_SESSION['user']['role'] ?? '') !== 'admin') {
+    header('Location: ../FrontOffice/login.php');
+    exit;
+}
+
+require_once __DIR__ . '/../../Controller/utilisateur_controller.php';
+$controller = new UtilisateurController();
+$users = $controller->listeUsers();
+?>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
@@ -96,44 +108,50 @@
                                 <th>Nom / Raison Sociale</th>
                                 <th>Email</th>
                                 <th>Rôle</th>
+                                <th>Domaine / Secteur</th>
+                                <th>Adresse</th>
+                                <th>Téléphone / Tarif</th>
                                 <th>Statut</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td>#U001</td>
-                                <td>TechCorp SAS</td>
-                                <td>contact@techcorp.com</td>
-                                <td><span class="badge primary">Entreprise</span></td>
-                                <td><span class="badge success">Actif</span></td>
-                                <td>
-                                    <button class="btn btn-outline btn-sm"><i class="fa-solid fa-pen"></i></button>
-                                    <button class="btn btn-outline btn-sm" style="color:var(--danger); border-color:var(--danger);"><i class="fa-solid fa-trash"></i></button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>#U002</td>
-                                <td>Alice Martin</td>
-                                <td>alice.m@expert.fr</td>
-                                <td><span class="badge waring" style="background:rgba(14,165,233,0.1); color:var(--secondary);">Expert</span></td>
-                                <td><span class="badge success">Actif</span></td>
-                                <td>
-                                    <button class="btn btn-outline btn-sm"><i class="fa-solid fa-pen"></i></button>
-                                    <button class="btn btn-outline btn-sm" style="color:var(--danger); border-color:var(--danger);"><i class="fa-solid fa-trash"></i></button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>#U003</td>
-                                <td>Consulting Group</td>
-                                <td>info@cg.com</td>
-                                <td><span class="badge primary">Entreprise</span></td>
-                                <td><span class="badge warning">En attente</span></td>
-                                <td>
-                                    <button class="btn btn-primary btn-sm"><i class="fa-solid fa-check"></i> Valider</button>
-                                    <button class="btn btn-outline btn-sm" style="color:var(--danger); border-color:var(--danger);"><i class="fa-solid fa-trash"></i></button>
-                                </td>
-                            </tr>
+                            <?php foreach ($users as $u): ?>
+                                <tr>
+                                    <td>#U<?php echo htmlspecialchars($u['id_user']); ?></td>
+                                    <td><?php echo $u['role'] === 'expert' ? htmlspecialchars(trim(($u['nom'] ?? '') . ' ' . ($u['prenom'] ?? ''))) : htmlspecialchars($u['nom_entreprise'] ?? ''); ?></td>
+                                    <td><?php echo htmlspecialchars($u['email']); ?></td>
+                                    <td>
+                                        <?php if (strtolower($u['role']) === 'expert'): ?>
+                                            <span class="badge warning" style="background:rgba(14,165,233,0.1); color:var(--secondary);">Expert</span>
+                                        <?php elseif (strtolower($u['role']) === 'entreprise'): ?>
+                                            <span class="badge primary">Entreprise</span>
+                                        <?php else: ?>
+                                            <span class="badge success"><?php echo htmlspecialchars(ucfirst($u['role'])); ?></span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td><?php echo htmlspecialchars(strtolower($u['role']) === 'expert' ? ($u['domaine'] ?? '') : ($u['secteur_activite'] ?? '')); ?></td>
+                                    <td><?php echo htmlspecialchars($u['adresse'] ?? ''); ?></td>
+                                    <td><?php echo htmlspecialchars(strtolower($u['role']) === 'expert' ? ($u['tarif_journalier'] ?? '') : ($u['telephone'] ?? '')); ?></td>
+                                    <td>
+                                        <?php if (strtolower($u['statut_compte']) === 'actif'): ?>
+                                            <span class="badge success">Actif</span>
+                                        <?php elseif (strtolower($u['statut_compte']) === 'en attente'): ?>
+                                            <span class="badge warning">En attente</span>
+                                        <?php else: ?>
+                                            <span class="badge primary"><?php echo htmlspecialchars(ucfirst($u['statut_compte'])); ?></span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td>
+                                        <a href="readUtilisateur.php?id_user=<?php echo urlencode($u['id_user']); ?>" class="btn btn-outline btn-sm"><i class="fa-solid fa-eye"></i></a>
+                                        <a href="updateUtilisateur.php?id_user=<?php echo urlencode($u['id_user']); ?>" class="btn btn-outline btn-sm"><i class="fa-solid fa-pen"></i></a>
+                                        <form action="../traitement/deleteUtilisateurTraitement.php" method="POST" style="display:inline;">
+                                            <input type="hidden" name="id_user" value="<?php echo htmlspecialchars($u['id_user']); ?>">
+                                            <button type="submit" class="btn btn-outline btn-sm" style="color:var(--danger); border-color:var(--danger);" onclick="return confirm('Supprimer cet utilisateur ?');"><i class="fa-solid fa-trash"></i></button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
                         </tbody>
                     </table>
                 </div>

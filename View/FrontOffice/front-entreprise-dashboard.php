@@ -1,4 +1,15 @@
-﻿<!DOCTYPE html>
+﻿<?php
+session_start();
+if (empty($_SESSION['user']['id_user'])) {
+    header('Location: login.php');
+    exit;
+}
+if (strtolower($_SESSION['user']['role'] ?? '') === 'expert') {
+    header('Location: front-expert-dashboard.php');
+    exit;
+}
+?>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
