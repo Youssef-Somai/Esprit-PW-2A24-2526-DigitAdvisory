@@ -319,15 +319,17 @@ $certificats = $controller->listCertificats();
         <div class="modal">
             <button class="modal-close" id="btnCloseAdd"><i class="fa-solid fa-xmark"></i></button>
             <h3><i class="fa-solid fa-plus-circle"></i> Nouvelle Certification ISO</h3>
-            <form method="POST" action="back-certification.php">
+            <form id="formAddCertif" method="POST" action="back-certification.php">
                 <input type="hidden" name="action" value="add">
                 <div class="form-group">
                     <label for="norme">Norme ISO *</label>
-                    <input type="text" id="norme" name="norme" placeholder="ex: ISO 27001" required>
+                    <input type="text" id="norme" name="norme" placeholder="ex: ISO 27001">
+                    <small id="error-norme" style="color:var(--danger); display:none; margin-top:5px;">Ce champ est obligatoire et doit commencer par 'ISO'.</small>
                 </div>
                 <div class="form-group">
                     <label for="titre">Titre *</label>
-                    <input type="text" id="titre" name="titre" placeholder="ex: Sécurité de l'Information" required>
+                    <input type="text" id="titre" name="titre" placeholder="ex: Sécurité de l'Information">
+                    <small id="error-titre" style="color:var(--danger); display:none; margin-top:5px;">Ce champ est obligatoire et doit contenir au moins 3 caractères.</small>
                 </div>
                 <div class="form-group">
                     <label for="description">Description</label>
@@ -360,6 +362,41 @@ $certificats = $controller->listCertificats();
         btnCancelAdd.addEventListener('click', closeModal);
         modalAdd.addEventListener('click', (e) => { if (e.target === modalAdd) closeModal(); });
         document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+        
+        // ─── Contrôle de saisie JS ───
+        const formAddCertif = document.getElementById('formAddCertif');
+        formAddCertif.addEventListener('submit', function(e) {
+            let isValid = true;
+            
+            const normeInput = document.getElementById('norme');
+            const titreInput = document.getElementById('titre');
+            const errorNorme = document.getElementById('error-norme');
+            const errorTitre = document.getElementById('error-titre');
+            
+            // Validation de la Norme (ex: doit commencer par ISO)
+            if (normeInput.value.trim() === '' || !normeInput.value.toUpperCase().startsWith('ISO')) {
+                errorNorme.style.display = 'block';
+                normeInput.style.borderColor = 'var(--danger)';
+                isValid = false;
+            } else {
+                errorNorme.style.display = 'none';
+                normeInput.style.borderColor = 'var(--gray-light)';
+            }
+            
+            // Validation du Titre (minimum 3 caractères)
+            if (titreInput.value.trim().length < 3) {
+                errorTitre.style.display = 'block';
+                titreInput.style.borderColor = 'var(--danger)';
+                isValid = false;
+            } else {
+                errorTitre.style.display = 'none';
+                titreInput.style.borderColor = 'var(--gray-light)';
+            }
+            
+            if (!isValid) {
+                e.preventDefault(); // Empêche la soumission du formulaire si invalide
+            }
+        });
     </script>
 </body>
 </html>

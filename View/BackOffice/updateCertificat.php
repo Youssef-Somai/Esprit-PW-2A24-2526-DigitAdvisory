@@ -167,17 +167,19 @@ if (!$cert) {
                         <span class="badge primary">#<?= $cert->getId() ?></span>
                     </div>
 
-                    <form method="POST" action="updateCertificat.php?id=<?= $cert->getId() ?>">
+                    <form id="formUpdateCertif" method="POST" action="updateCertificat.php?id=<?= $cert->getId() ?>">
                         <input type="hidden" name="action" value="update">
                         <input type="hidden" name="id" value="<?= $cert->getId() ?>">
 
                         <div class="form-group">
                             <label for="norme">Norme ISO <span class="required">*</span></label>
-                            <input type="text" id="norme" name="norme" value="<?= htmlspecialchars($cert->getNorme()) ?>" required>
+                            <input type="text" id="norme" name="norme" value="<?= htmlspecialchars($cert->getNorme()) ?>">
+                            <small id="error-norme" style="color:var(--danger); display:none; margin-top:5px;">Ce champ est obligatoire et doit commencer par 'ISO'.</small>
                         </div>
                         <div class="form-group">
                             <label for="titre">Titre <span class="required">*</span></label>
-                            <input type="text" id="titre" name="titre" value="<?= htmlspecialchars($cert->getTitre()) ?>" required>
+                            <input type="text" id="titre" name="titre" value="<?= htmlspecialchars($cert->getTitre()) ?>">
+                            <small id="error-titre" style="color:var(--danger); display:none; margin-top:5px;">Ce champ est obligatoire et doit contenir au moins 3 caractères.</small>
                         </div>
                         <div class="form-group">
                             <label for="description">Description</label>
@@ -197,5 +199,42 @@ if (!$cert) {
             </section>
         </main>
     </div>
+
+    <script>
+        // ─── Contrôle de saisie JS ───
+        const formUpdateCertif = document.getElementById('formUpdateCertif');
+        formUpdateCertif.addEventListener('submit', function(e) {
+            let isValid = true;
+            
+            const normeInput = document.getElementById('norme');
+            const titreInput = document.getElementById('titre');
+            const errorNorme = document.getElementById('error-norme');
+            const errorTitre = document.getElementById('error-titre');
+            
+            // Validation de la Norme (ex: doit commencer par ISO)
+            if (normeInput.value.trim() === '' || !normeInput.value.toUpperCase().startsWith('ISO')) {
+                errorNorme.style.display = 'block';
+                normeInput.style.borderColor = 'var(--danger)';
+                isValid = false;
+            } else {
+                errorNorme.style.display = 'none';
+                normeInput.style.borderColor = 'var(--gray-light)';
+            }
+            
+            // Validation du Titre (minimum 3 caractères)
+            if (titreInput.value.trim().length < 3) {
+                errorTitre.style.display = 'block';
+                titreInput.style.borderColor = 'var(--danger)';
+                isValid = false;
+            } else {
+                errorTitre.style.display = 'none';
+                titreInput.style.borderColor = 'var(--gray-light)';
+            }
+            
+            if (!isValid) {
+                e.preventDefault(); // Empêche la soumission du formulaire
+            }
+        });
+    </script>
 </body>
 </html>
