@@ -1,10 +1,37 @@
-﻿<!DOCTYPE html>
+<?php
+require_once '../../Controller/PortfolioController.php';
+require_once '../../Controller/ElementPortfolioController.php';
+
+$portfolioC = new PortfolioController();
+$elementC = new ElementPortfolioController();
+
+// Suppression
+if (isset($_GET['action'])) {
+    if ($_GET['action'] == 'deleteElement' && isset($_GET['id'])) {
+        $elementC->deleteElement($_GET['id']);
+        header('Location: back-portfolio.php');
+        exit();
+    }
+    if ($_GET['action'] == 'deletePortfolio' && isset($_GET['id'])) {
+        $portfolioC->deletePortfolio($_GET['id']);
+        header('Location: back-portfolio.php');
+        exit();
+    }
+}
+
+$portfoliosStmt = $portfolioC->listPortfolios();
+$portfolios = [];
+while($row = $portfoliosStmt->fetch()) {
+    $portfolios[] = $row;
+}
+$elements = $elementC->listAllElements();
+?>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Back Office | Gestion Portfolios</title>
-    <!-- Same CSS links as back-quiz.html to keep UI consistent -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../../css/style.css">
@@ -32,7 +59,9 @@
         .badge { padding: 0.25rem 0.75rem; border-radius: var(--radius-full); font-size: 0.85rem; font-weight: 500; display: inline-block;}
         .badge.success { background: rgba(16, 185, 129, 0.1); color: var(--success); }
         .badge.primary { background: rgba(37, 99, 235, 0.1); color: var(--primary); }
-        .btn-sm { padding: 0.4rem 0.8rem; font-size: 0.85rem; }
+        .btn-sm { padding: 0.4rem 0.8rem; font-size: 0.85rem; border: none; cursor:pointer; text-decoration: none; border-radius: 4px; display: inline-block; }
+        .btn-outline { background: white; border: 1px solid var(--gray-light); }
+        .btn-danger { color: white; background: var(--danger); border: none; }
     </style>
 </head>
 <body class="admin-theme">
@@ -61,37 +90,76 @@
         <main class="main-content">
             <div class="top-navbar">
                 <h2 style="margin: 0; font-size: 1.5rem;">Administration - Rôle Superviseur</h2>
-                <span class="badge warning" style="font-size: 1rem;"><i class="fa-solid fa-lock"></i> Espace Sécurisé Admin</span>
+                <span class="badge warning" style="font-size: 1rem; background: #fef08a; color: #a16207; padding: 0.5rem 1rem;"><i class="fa-solid fa-lock"></i> Espace Sécurisé Admin</span>
             </div>
 
             <section class="fade-in-up">
                 <div style="display: flex; justify-content: space-between; align-items: center;" class="mb-2">
-                    <h2>Gestion Globale des Portfolios</h2>
+                    <h2>Gestion Globale des Portfolios (<?= count($portfolios) ?>)</h2>
                 </div>
 
-                <div class="card admin-card hover-zoom">
-                    <h3>Base de données des compétences (Experts/Entreprises)</h3>
-                    <table class="data-table mt-1">
+                <div class="card admin-card hover-zoom" style="margin-bottom: 3rem;">
+                    <h3 style="margin-bottom: 1rem;">Portfolios (Conteneurs)</h3>
+                    <table class="data-table">
                         <thead>
                             <tr>
-                                <th>Utilisateur</th>
-                                <th>Nombre Projets</th>
-                                <th>Top Compétence</th>
-                                <th>Dernière Maj</th>
+                                <th>ID</th>
+                                <th>Titre du Portfolio</th>
+                                <th>Description</th>
+                                <th>Créé le</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
+                            <?php foreach($portfolios as $p): ?>
                             <tr>
-                                <td>Alice Martin (Expert)</td>
-                                <td>5</td>
-                                <td><span class="badge primary">Sécurité ISO 27001</span></td>
-                                <td>08/04/2026</td>
+                                <td><?= $p['id_portfolio'] ?></td>
+                                <td><strong><?= htmlspecialchars($p['titre_portfolio']) ?></strong></td>
+                                <td><?= htmlspecialchars(substr($p['description_portfolio'], 0, 50)) ?>...</td>
+                                <td><?= date('d/m/Y', strtotime($p['date_creation'])) ?></td>
                                 <td>
-                                    <button class="btn btn-outline btn-sm"><i class="fa-solid fa-eye"></i> Consulter</button>
-                                    <button class="btn btn-outline btn-sm" style="color:var(--danger); border-color:var(--danger);"><i class="fa-solid fa-ban"></i> Modérer</button>
+                                    <a href="?action=deletePortfolio&id=<?= $p['id_portfolio'] ?>" class="btn-sm btn-danger" onclick="return confirm('Supprimer ce portfolio et tous ses éléments ?');"><i class="fa-solid fa-ban"></i> Supprimer</a>
                                 </td>
                             </tr>
+                            <?php endforeach; ?>
+                            <?php if(empty($portfolios)): ?>
+                                <tr><td colspan="5" style="text-align:center; padding: 2rem;">Aucun portfolio existant.</td></tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="card admin-card hover-zoom">
+                    <h3 style="margin-bottom: 1rem;">Base de données des compétences / Projets (<?= count($elements) ?>)</h3>
+                    <table class="data-table mt-1">
+                        <thead>
+                            <tr>
+                                <th>ID Elément</th>
+                                <th>Portfolio Parent</th>
+                                <th>Type</th>
+                                <th>Titre</th>
+                                <th>Niveau / Statut</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach($elements as $el): ?>
+                            <tr>
+                                <td><?= $el['id_element'] ?></td>
+                                <td><?= htmlspecialchars($el['titre_portfolio']) ?></td>
+                                <td><span class="badge <?= $el['type_element'] == 'projet' ? 'primary' : 'success' ?>"><?= ucfirst($el['type_element']) ?></span></td>
+                                <td><?= htmlspecialchars($el['titre']) ?></td>
+                                <td>
+                                    <?php if($el['type_element'] == 'projet') echo htmlspecialchars($el['statut']); else echo htmlspecialchars($el['niveau']); ?>
+                                </td>
+                                <td>
+                                    <a href="?action=deleteElement&id=<?= $el['id_element'] ?>" class="btn-sm btn-danger" onclick="return confirm('Supprimer cet élément ?');"><i class="fa-solid fa-ban"></i> Supprimer</a>
+                                </td>
+                            </tr>
+                            <?php endforeach; ?>
+                            <?php if(empty($elements)): ?>
+                                <tr><td colspan="6" style="text-align:center; padding: 2rem;">Aucun élément existant.</td></tr>
+                            <?php endif; ?>
                         </tbody>
                     </table>
                 </div>
