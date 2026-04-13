@@ -11,7 +11,7 @@ class config
             $dbname = "digitadvisory";
             try {
                 self::$pdo = new PDO(
-                    "mysql:host=$servername;dbname=$dbname",
+                    "mysql:host=$servername;dbname=$dbname;charset=utf8mb4",
                     $username,
                     $password
 

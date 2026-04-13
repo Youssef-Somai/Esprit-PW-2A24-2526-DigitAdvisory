@@ -1,4 +1,18 @@
-﻿<!DOCTYPE html>
+<?php
+require_once __DIR__ . '/../../Controller/CertificatController.php';
+
+$controller   = new CertificatController();
+$certificats  = $controller->listCertificats();
+
+// Couleurs et icônes alternées pour les cartes
+$styles = [
+    ['border' => 'var(--primary)',   'icon' => 'fa-shield-halved', 'iconClass' => 'text-primary'],
+    ['border' => 'var(--secondary)', 'icon' => 'fa-chart-line',    'iconClass' => 'text-secondary'],
+    ['border' => 'var(--success)',   'icon' => 'fa-leaf',          'iconClass' => 'text-accent'],
+    ['border' => 'var(--accent)',    'icon' => 'fa-hard-hat',      'iconClass' => 'text-primary'],
+];
+?>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
@@ -25,6 +39,13 @@
         .badge { padding: 0.25rem 0.75rem; border-radius: var(--radius-full); font-size: 0.85rem; font-weight: 500; display: inline-block;}
         .badge.success { background: rgba(16, 185, 129, 0.1); color: var(--success); }
         .badge.primary { background: rgba(37, 99, 235, 0.1); color: var(--primary); }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--gray);
+        }
+        .empty-state i { font-size: 3rem; margin-bottom: 1rem; color: var(--gray-light); }
     </style>
 </head>
 <body>
@@ -50,47 +71,39 @@
         <main class="main-content">
             <div class="top-navbar">
                 <h2 style="margin: 0; font-size: 1.5rem;">Certifications ISO Recommandées</h2>
+                <span class="badge primary" style="font-size: 0.95rem;"><?= count($certificats) ?> certification(s) disponible(s)</span>
             </div>
-            <section class="fade-in-up">
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem;">
-                    <div class="card hover-zoom interactive-card" style="border-left: 4px solid var(--primary);">
-                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
-                            <h3><i class="fa-solid fa-shield-halved text-primary"></i> ISO 27001</h3>
-                            <span class="badge success">Fortement Recommandé</span>
-                        </div>
-                        <p style="font-size: 0.95rem; color: var(--gray); margin-bottom: 1rem;">Management de la sécurité de l'information. Protection des données sensibles et gestion des risques IT.</p>
-                        <h4 style="font-size: 0.9rem; margin-bottom: 0.5rem;">Pourquoi c'est adapté à votre profil :</h4>
-                        <ul style="font-size: 0.85rem; color: var(--gray); list-style-type: disc; margin-left: 1.5rem; margin-bottom: 1rem;">
-                            <li>Score Quiz Cybersécurité: <strong style="color: var(--primary);">Élevé</strong></li>
-                            <li>Secteur IT avec manipulation de données sensibles</li>
-                            <li>Croissance digitale forte identifiée</li>
-                        </ul>
-                        <h4 style="font-size: 0.9rem; margin-bottom: 0.5rem;">Avantages :</h4>
-                        <ul style="font-size: 0.85rem; color: var(--gray); list-style-type: '✅ '; margin-left: 1rem;">
-                            <li>Renforce la confiance des clients</li>
-                            <li>Réduit les risques de failles</li>
-                            <li>Conformité réglementaire (RGPD)</li>
-                        </ul>
-                    </div>
 
-                    <div class="card hover-zoom interactive-card" style="border-left: 4px solid var(--secondary);">
-                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
-                            <h3><i class="fa-solid fa-chart-line text-secondary"></i> ISO 9001</h3>
-                            <span class="badge primary">Suggéré</span>
-                        </div>
-                        <p style="font-size: 0.95rem; color: var(--gray); margin-bottom: 1rem;">Système de management de la qualité. Amélioration continue des processus internes.</p>
-                        <h4 style="font-size: 0.9rem; margin-bottom: 0.5rem;">Pourquoi c'est adapté à votre profil :</h4>
-                        <ul style="font-size: 0.85rem; color: var(--gray); list-style-type: disc; margin-left: 1.5rem; margin-bottom: 1rem;">
-                            <li>Optimisation des processus internes demandée</li>
-                            <li>Volonté de structurer la croissance</li>
-                        </ul>
-                        <h4 style="font-size: 0.9rem; margin-bottom: 0.5rem;">Avantages :</h4>
-                        <ul style="font-size: 0.85rem; color: var(--gray); list-style-type: '✅ '; margin-left: 1rem;">
-                            <li>Efficacité opérationnelle accrue</li>
-                            <li>Satisfaction client améliorée</li>
-                        </ul>
+            <section class="fade-in-up">
+                <?php if (empty($certificats)): ?>
+                    <div class="empty-state">
+                        <i class="fa-solid fa-award"></i>
+                        <h3>Aucune certification disponible</h3>
+                        <p>Les certifications ISO seront affichées ici dès qu'elles seront configurées par l'administrateur.</p>
                     </div>
+                <?php else: ?>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem;">
+                    <?php foreach ($certificats as $index => $cert):
+                        $style = $styles[$index % count($styles)];
+                    ?>
+                    <div class="card hover-zoom interactive-card" style="border-left: 4px solid <?= $style['border'] ?>;">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+                            <h3><i class="fa-solid <?= $style['icon'] ?> <?= $style['iconClass'] ?>"></i> <?= htmlspecialchars($cert->getNorme()) ?></h3>
+                            <span class="badge success">Recommandé</span>
+                        </div>
+                        <h4 style="font-size: 1.05rem; margin-bottom: 0.5rem;"><?= htmlspecialchars($cert->getTitre()) ?></h4>
+                        <p style="font-size: 0.95rem; color: var(--gray); margin-bottom: 1rem;">
+                            <?= htmlspecialchars($cert->getDescription() ?? 'Aucune description disponible.') ?>
+                        </p>
+                        <?php if ($cert->getOrganisme()): ?>
+                        <p style="font-size: 0.85rem; color: var(--gray);">
+                            <i class="fa-solid fa-building" style="margin-right: 0.3rem;"></i> Organisme : <strong><?= htmlspecialchars($cert->getOrganisme()) ?></strong>
+                        </p>
+                        <?php endif; ?>
+                    </div>
+                    <?php endforeach; ?>
                 </div>
+                <?php endif; ?>
             </section>
         </main>
     </div>
