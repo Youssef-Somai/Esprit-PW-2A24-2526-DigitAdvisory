@@ -23,5 +23,9 @@ CREATE TABLE IF NOT EXISTS user (
     niveau_experience VARCHAR(100) DEFAULT NULL,
     tarif_journalier  DECIMAL(10,2) DEFAULT NULL,
 
-    created_at       TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at       TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    -- Reset password fields
+    reset_token      VARCHAR(255) DEFAULT NULL,
+    reset_token_expires DATETIME DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

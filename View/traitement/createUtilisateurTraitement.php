@@ -74,6 +74,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     $_SESSION['register_success'] = true;
-    header('Location: ../FrontOffice/login.php');
+    if (isset($_SESSION['user']['role']) && strtolower($_SESSION['user']['role']) === 'admin') {
+        header('Location: ../BackOffice/back-utilisateur.php');
+    } else {
+        header('Location: ../FrontOffice/login.php');
+    }
     exit;
 }

@@ -55,7 +55,7 @@
                 <div class="user-avatar">AD</div>
                 <div><h4 style="font-size: 0.95rem; margin-bottom: 0.2rem; color: white;">Admin Système</h4><span style="font-size: 0.8rem; color: var(--gray-light);">Admin</span></div>
             </div>
-                <a href="../../View/FrontOffice/login.php" style="margin-left: auto; color: var(--danger);"><i class="fa-solid fa-arrow-right-from-bracket"></i></a>
+                <a href="../../View/FrontOffice/login.php#register" style="margin-left: auto; color: var(--danger);"><i class="fa-solid fa-arrow-right-from-bracket"></i></a>
         </aside>
 
         <main class="main-content">
@@ -106,3 +106,4 @@
     </div>
 </body>
 </html>
+

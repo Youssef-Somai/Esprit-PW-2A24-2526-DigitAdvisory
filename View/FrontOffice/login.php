@@ -1,4 +1,13 @@
-<?php session_start(); ?>
+<?php
+session_start();
+$login_error = $_SESSION['login_error'] ?? null;
+$register_success = $_SESSION['register_success'] ?? null;
+session_unset();
+session_destroy();
+session_start(); // Redémarrer une session vierge pour les erreurs éventuelles
+if ($login_error) $_SESSION['login_error'] = $login_error;
+if ($register_success) $_SESSION['register_success'] = $register_success;
+?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -213,16 +222,16 @@
                 <?php if (isset($_SESSION['login_error'])): ?>
                     <div class="login-error" style="background-color: #fee2e2; color: #991b1b; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; text-align: center; border: 1px solid #fca5a5; font-weight: 500;">
                         <?php
+                            $msg = 'Une erreur est survenue, veuillez réessayer.';
                             if ($_SESSION['login_error'] == 1) {
-                                echo 'Email ou mot de passe incorrect.';
+                                $msg = 'Email ou mot de passe incorrect.';
                             } elseif ($_SESSION['login_error'] == 2) {
-                                echo 'Ce compte est désactivé.';
-                            } else {
-                                echo 'Une erreur est survenue, veuillez réessayer.';
+                                $msg = 'Ce compte est désactivé.';
                             }
-                            unset($_SESSION['login_error']);
+                            echo $msg;
                         ?>
                     </div>
+                    <?php unset($_SESSION['login_error']); ?>
                 <?php endif; ?>
 
                 <!-- LOGIN -->
@@ -243,7 +252,7 @@
                         <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
                             <input type="checkbox"> Se souvenir de moi
                         </label>
-                        <a href="#" class="text-primary">Mot de passe oublié ?</a>
+                        <a href="forgot_password.php" class="text-primary">Mot de passe oublié ?</a>
                     </div>
 
                     <button type="submit" class="btn btn-primary btn-block">Se connecter</button>
@@ -295,7 +304,7 @@
 
                         <div class="form-group">
                             <label for="telephone">Téléphone</label>
-                            <input type="text" name="telephone" id="telephone" class="form-control" placeholder="Téléphone" inputmode="numeric" maxlength="6">
+                            <input type="text" name="telephone" id="telephone" class="form-control" placeholder="Téléphone" inputmode="numeric" maxlength="8">
                             <span class="error-text" id="error-telephone"></span>
                         </div>
                     </div>
@@ -468,7 +477,7 @@
             const phoneField = document.getElementById('telephone');
             if (phoneField) {
                 phoneField.addEventListener('input', () => {
-                    phoneField.value = phoneField.value.replace(/[^0-9]/g, '').slice(0, 6);
+                    phoneField.value = phoneField.value.replace(/[^0-9]/g, '').slice(0, 8);
                 });
             }
 
@@ -622,8 +631,8 @@
                     if (!/^\d+$/.test(telValue)) {
                         showRegisterError(telephone, 'Le téléphone doit contenir uniquement des chiffres.');
                         valid = false;
-                    } else if (telValue.length > 6) {
-                        showRegisterError(telephone, 'Le téléphone ne doit pas dépasser 6 chiffres.');
+                    } else if (telValue.length > 8) {
+                        showRegisterError(telephone, 'Le téléphone ne doit pas dépasser 8 chiffres.');
                         valid = false;
                     }
                 }

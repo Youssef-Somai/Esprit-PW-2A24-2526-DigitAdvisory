@@ -77,7 +77,7 @@ $avatarText = strtoupper(substr(trim($user['prenom'] ?: $user['email']), 0, 2));
             <div class="user-profile-widget">
                 <div class="user-avatar"><?php echo $avatarText; ?></div>
                 <div><h4 style="font-size: 0.95rem; margin-bottom: 0.2rem;"><?php echo $displayName; ?></h4><span style="font-size: 0.8rem; color: var(--gray);">Consultant Expert</span></div>
-                <a href="login.php" style="margin-left: auto; color: var(--danger);"><i class="fa-solid fa-arrow-right-from-bracket"></i></a>
+                <a href="login.php#register" style="margin-left: auto; color: var(--danger);"><i class="fa-solid fa-arrow-right-from-bracket"></i></a>
             </div>
         </aside>
 
@@ -220,3 +220,4 @@ $avatarText = strtoupper(substr(trim($user['prenom'] ?: $user['email']), 0, 2));
     </script>
 </body>
 </html>
+
