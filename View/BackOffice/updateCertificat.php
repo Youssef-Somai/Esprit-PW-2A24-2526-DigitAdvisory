@@ -17,11 +17,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         (int) $_POST['id'],
         $_POST['norme'],
         $_POST['titre'],
+        $_POST['version'] ?? '2022',
+        $_POST['statut'] ?? 'Actif',
+        (int) ($_POST['duree_validite'] ?? 36),
         $_POST['description'],
-        $_POST['organisme']
+        $_POST['organisme'],
+        $_POST['logo_url'] ?? null
     );
     $controller->updateCertificat($certificat);
-    header('Location: back-certification.php');
+    header('Location: back-certification.php?success=update');
     exit;
 }
 
@@ -171,15 +175,35 @@ if (!$cert) {
                         <input type="hidden" name="action" value="update">
                         <input type="hidden" name="id" value="<?= $cert->getId() ?>">
 
-                        <div class="form-group">
-                            <label for="norme">Norme ISO <span class="required">*</span></label>
-                            <input type="text" id="norme" name="norme" value="<?= htmlspecialchars($cert->getNorme()) ?>">
-                            <small id="error-norme" style="color:var(--danger); display:none; margin-top:5px;">Ce champ est obligatoire et doit commencer par 'ISO'.</small>
+                        <div style="display:flex; gap: 1rem;">
+                            <div class="form-group" style="flex:1;">
+                                <label for="norme">Norme ISO <span class="required">*</span></label>
+                                <input type="text" id="norme" name="norme" value="<?= htmlspecialchars($cert->getNorme()) ?>">
+                                <small id="error-norme" style="color:var(--danger); display:none; margin-top:5px;">Ce champ est obligatoire et doit commencer par 'ISO'.</small>
+                            </div>
+                            <div class="form-group" style="flex:1;">
+                                <label for="version">Version</label>
+                                <input type="text" id="version" name="version" value="<?= htmlspecialchars($cert->getVersion()) ?>">
+                            </div>
                         </div>
                         <div class="form-group">
                             <label for="titre">Titre <span class="required">*</span></label>
                             <input type="text" id="titre" name="titre" value="<?= htmlspecialchars($cert->getTitre()) ?>">
                             <small id="error-titre" style="color:var(--danger); display:none; margin-top:5px;">Ce champ est obligatoire et doit contenir au moins 3 caractères.</small>
+                        </div>
+                        <div style="display:flex; gap: 1rem;">
+                            <div class="form-group" style="flex:1;">
+                                <label for="statut">Statut</label>
+                                <select id="statut" name="statut">
+                                    <option value="Actif" <?= $cert->getStatut() === 'Actif' ? 'selected' : '' ?>>Actif</option>
+                                    <option value="En révision" <?= $cert->getStatut() === 'En révision' ? 'selected' : '' ?>>En révision</option>
+                                    <option value="Obsolète" <?= $cert->getStatut() === 'Obsolète' ? 'selected' : '' ?>>Obsolète</option>
+                                </select>
+                            </div>
+                            <div class="form-group" style="flex:1;">
+                                <label for="duree_validite">Validité (mois)</label>
+                                <input type="number" id="duree_validite" name="duree_validite" value="<?= htmlspecialchars($cert->getDureeValidite()) ?>" min="12">
+                            </div>
                         </div>
                         <div class="form-group">
                             <label for="description">Description</label>
