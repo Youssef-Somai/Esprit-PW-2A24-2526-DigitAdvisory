@@ -11,23 +11,7 @@ if (!isset($_GET['id'])) {
 
 $id = (int) $_GET['id'];
 
-// ─── UPDATE action (POST) ───
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'update') {
-    $certificat = new Certificat(
-        (int) $_POST['id'],
-        $_POST['norme'],
-        $_POST['titre'],
-        $_POST['version'] ?? '2022',
-        $_POST['statut'] ?? 'Actif',
-        (int) ($_POST['duree_validite'] ?? 36),
-        $_POST['description'],
-        $_POST['organisme'],
-        $_POST['logo_url'] ?? null
-    );
-    $controller->updateCertificat($certificat);
-    header('Location: back-certification.php?success=update');
-    exit;
-}
+
 
 // ─── Fetch existing data ───
 $cert = $controller->getCertificat($id);
@@ -171,8 +155,8 @@ if (!$cert) {
                         <span class="badge primary">#<?= $cert->getId() ?></span>
                     </div>
 
-                    <form id="formUpdateCertif" method="POST" action="updateCertificat.php?id=<?= $cert->getId() ?>">
-                        <input type="hidden" name="action" value="update">
+                    <form id="formUpdateCertif" method="POST" action="../../Controller/CertificatController.php">
+                        <input type="hidden" name="action" value="update_certif">
                         <input type="hidden" name="id" value="<?= $cert->getId() ?>">
 
                         <div style="display:flex; gap: 1rem;">

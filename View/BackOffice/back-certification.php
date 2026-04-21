@@ -5,71 +5,6 @@ require_once __DIR__ . '/../../Controller/CritereController.php';
 $certifController = new CertificatController();
 $critereController = new CritereController();
 
-// ─── DELETE actions ───
-if (isset($_GET['action']) && isset($_GET['id'])) {
-    if ($_GET['action'] === 'delete_certif') {
-        $certifController->deleteCertificat((int) $_GET['id']);
-        header('Location: back-certification.php?success=delete_certif&tab=certifs');
-        exit;
-    }
-    if ($_GET['action'] === 'delete_critere') {
-        $critereController->deleteCritere((int) $_GET['id']);
-        header('Location: back-certification.php?success=delete_critere&tab=criteres');
-        exit;
-    }
-}
-
-// ─── POST actions (Create & Sync) ───
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
-    // 1. Ajouter Certification
-    if ($_POST['action'] === 'add_certif') {
-        $certificat = new Certificat(
-            null,
-            $_POST['norme'],
-            $_POST['titre'],
-            $_POST['version'] ?? '2022',
-            $_POST['statut'] ?? 'Actif',
-            isset($_POST['duree_validite']) ? (int) $_POST['duree_validite'] : 36,
-            $_POST['description'],
-            $_POST['organisme'],
-            null
-        );
-        $certifController->addCertificat($certificat);
-        header('Location: back-certification.php?success=add_certif&tab=certifs');
-        exit;
-    }
-    
-    // 2. Ajouter Critère Global (Indépendant)
-    if ($_POST['action'] === 'add_critere') {
-        $critere = new Critere(
-            null,
-            $_POST['nom'],
-            $_POST['categorie'] ?? 'Général',
-            $_POST['description'],
-            $_POST['moyen_preuve'] ?? null,
-            isset($_POST['est_obligatoire']) ? 1 : 0,
-            $_POST['difficulte'] ?? 'Moyen',
-            $_POST['document_template'] ?? null
-        );
-        $critereController->addCritere($critere);
-        header('Location: back-certification.php?success=add_critere&tab=criteres');
-        exit;
-    }
-
-    // 3. Synchroniser les Critères (Many-to-Many)
-    if ($_POST['action'] === 'sync_criteres') {
-        $certificat_id = (int) $_POST['certificat_id'];
-        $criteres_ids = $_POST['criteres'] ?? []; // Ce sera un tableau si des cases sont cochées
-        $criteres_avec_poids = [];
-        foreach ($criteres_ids as $c_id) {
-            $poids = isset($_POST['poids_'.$c_id]) ? (int) $_POST['poids_'.$c_id] : 1;
-            $criteres_avec_poids[$c_id] = $poids;
-        }
-        $certifController->syncCriteresForCertificat($certificat_id, $criteres_avec_poids);
-        header('Location: back-certification.php?success=sync_criteres&tab=certifs');
-        exit;
-    }
-}
 
 // ─── SUCCESS MESSAGES ───
 $successMsg = '';
@@ -286,10 +221,6 @@ $activeTab = $_GET['tab'] ?? 'certifs';
                         <div style="display: flex; justify-content: space-between; margin-bottom: 1.5rem; align-items: center;">
                             <h3 style="margin: 0; font-size: 1.1rem; color: var(--gray);">Liste des Certifications</h3>
                             <div style="display: flex; gap: 1rem;">
-                                <div style="position: relative; width: 250px;">
-                                    <i class="fa-solid fa-search" style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--gray);"></i>
-                                    <input type="text" id="searchCertif" placeholder="Rechercher..." style="width: 100%; padding: 0.6rem 1rem 0.6rem 2.5rem; border: 1px solid var(--gray-light); border-radius: var(--radius); outline: none;">
-                                </div>
                                 <button class="btn btn-primary" onclick="openModalAddCertif()"><i class="fa-solid fa-plus"></i></button>
                             </div>
                         </div>
@@ -327,7 +258,7 @@ $activeTab = $_GET['tab'] ?? 'certifs';
                                     <td style="white-space: nowrap;">
                                         <!-- Actions Modif / Delete -->
                                         <a href="updateCertificat.php?id=<?= $cert->getId() ?>" class="btn btn-outline btn-sm" title="Modifier"><i class="fa-solid fa-pen"></i></a>
-                                        <a href="back-certification.php?action=delete_certif&id=<?= $cert->getId() ?>" class="btn btn-outline btn-sm btn-danger-outline btn-delete" data-type="Certification" title="Supprimer"><i class="fa-solid fa-trash"></i></a>
+                                        <a href="../../Controller/CertificatController.php?action=delete_certif&id=<?= $cert->getId() ?>" class="btn btn-outline btn-sm btn-danger-outline btn-delete" data-type="Certification" title="Supprimer"><i class="fa-solid fa-trash"></i></a>
                                         <!-- Lien Many-to-Many -->
                                         <!-- On stocke les IDs liés et leurs Poids dans un objet JSON -->
                                         <button class="btn btn-primary btn-sm" style="margin-left: 0.5rem;" 
@@ -349,10 +280,6 @@ $activeTab = $_GET['tab'] ?? 'certifs';
                         <div style="display: flex; justify-content: space-between; margin-bottom: 1.5rem; align-items: center;">
                             <h3 style="margin: 0; font-size: 1.1rem; color: var(--gray);">Base des Critères</h3>
                             <div style="display: flex; gap: 1rem;">
-                                <div style="position: relative; width: 250px;">
-                                    <i class="fa-solid fa-search" style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--gray);"></i>
-                                    <input type="text" id="searchCritere" placeholder="Rechercher..." style="width: 100%; padding: 0.6rem 1rem 0.6rem 2.5rem; border: 1px solid var(--gray-light); border-radius: var(--radius); outline: none;">
-                                </div>
                                 <button class="btn btn-primary" onclick="openModalAddCritere()"><i class="fa-solid fa-plus"></i></button>
                             </div>
                         </div>
@@ -387,7 +314,7 @@ $activeTab = $_GET['tab'] ?? 'certifs';
                                     <td><span class="badge warning"><?= htmlspecialchars($critere->getDifficulte()) ?></span></td>
                                     <td style="white-space: nowrap;">
                                         <a href="updateCritere.php?id=<?= $critere->getId() ?>" class="btn btn-outline btn-sm"><i class="fa-solid fa-pen"></i></a>
-                                        <a href="back-certification.php?action=delete_critere&id=<?= $critere->getId() ?>" class="btn btn-outline btn-sm btn-danger-outline btn-delete" data-type="Critère"><i class="fa-solid fa-trash"></i></a>
+                                        <a href="../../Controller/CritereController.php?action=delete_critere&id=<?= $critere->getId() ?>" class="btn btn-outline btn-sm btn-danger-outline btn-delete" data-type="Critère"><i class="fa-solid fa-trash"></i></a>
                                     </td>
                                 </tr>
                                 <?php endforeach; ?>
@@ -405,7 +332,7 @@ $activeTab = $_GET['tab'] ?? 'certifs';
         <div class="modal">
             <button class="modal-close" onclick="closeModal('modalAddCertif')"><i class="fa-solid fa-xmark"></i></button>
             <h3><i class="fa-solid fa-plus-circle"></i> Nouvelle Certification ISO</h3>
-            <form id="formAddCertif" method="POST" action="back-certification.php">
+            <form id="formAddCertif" method="POST" action="../../Controller/CertificatController.php">
                 <input type="hidden" name="action" value="add_certif">
                 <div style="display:flex; gap: 1rem;">
                     <div class="form-group" style="flex:1;">
@@ -458,7 +385,7 @@ $activeTab = $_GET['tab'] ?? 'certifs';
         <div class="modal">
             <button class="modal-close" onclick="closeModal('modalAddCritere')"><i class="fa-solid fa-xmark"></i></button>
             <h3><i class="fa-solid fa-plus-circle"></i> Nouveau Critère</h3>
-            <form id="formAddCritere" method="POST" action="back-certification.php">
+            <form id="formAddCritere" method="POST" action="../../Controller/CritereController.php">
                 <input type="hidden" name="action" value="add_critere">
                 <div class="form-group">
                     <label for="nom">Nom du Critère *</label>
@@ -518,7 +445,7 @@ $activeTab = $_GET['tab'] ?? 'certifs';
             <h3><i class="fa-solid fa-link"></i> Lier Critères — <span id="syncCertifNom" class="text-primary"></span></h3>
             <p style="color: var(--gray); font-size: 0.9rem; margin-bottom: 1rem;">Cochez les critères globaux que vous souhaitez appliquer à cette certification.</p>
             
-            <form id="formSync" method="POST" action="back-certification.php">
+            <form id="formSync" method="POST" action="../../Controller/CertificatController.php">
                 <input type="hidden" name="action" value="sync_criteres">
                 <input type="hidden" name="certificat_id" id="syncCertifId" value="">
                 
@@ -687,20 +614,6 @@ $activeTab = $_GET['tab'] ?? 'certifs';
                 }
             }
         });
-
-        // ─── RECHERCHE ───
-        function attachSearch(inputId, tableId) {
-            document.getElementById(inputId)?.addEventListener('keyup', function() {
-                let filter = this.value.toLowerCase();
-                let rows = document.querySelectorAll('#' + tableId + ' tbody tr');
-                rows.forEach(row => {
-                    let text = row.innerText.toLowerCase();
-                    row.style.display = text.indexOf(filter) > -1 ? '' : 'none';
-                });
-            });
-        }
-        attachSearch('searchCertif', 'tableCertifs');
-        attachSearch('searchCritere', 'tableCriteres');
 
         // ─── CONFIRMATION SUPPRESSION ───
         document.querySelectorAll('.btn-delete').forEach(btn => {

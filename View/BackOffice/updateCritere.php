@@ -5,23 +5,7 @@ $critereController = new CritereController();
 
 $c_id = isset($_GET['id']) ? (int) $_GET['id'] : null;
 
-// Handling POST request
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $id = (int) $_POST['id'];
-    $critere = new Critere(
-        $id,
-        $_POST['nom'],
-        $_POST['categorie'] ?? 'Général',
-        $_POST['description'],
-        $_POST['moyen_preuve'] ?? null,
-        isset($_POST['est_obligatoire']) ? 1 : 0,
-        $_POST['difficulte'] ?? 'Moyen',
-        $_POST['document_template'] ?? null
-    );
-    $critereController->updateCritere($critere);
-    header('Location: back-certification.php?success=update_critere&tab=criteres');
-    exit;
-}
+
 
 if (!$c_id) {
     header('Location: back-certification.php?tab=criteres');
@@ -120,7 +104,8 @@ if (!$critere) {
                         <h3 style="margin: 0; font-size: 1.25rem;">Formulaire d'Édition</h3>
                     </div>
 
-                    <form id="formUpdateCritere" method="POST" action="updateCritere.php?id=<?= $critere->getId() ?>">
+                    <form id="formUpdateCritere" method="POST" action="../../Controller/CritereController.php">
+                        <input type="hidden" name="action" value="update_critere">
                         <input type="hidden" name="id" value="<?= htmlspecialchars($critere->getId()) ?>">
                         
                         <div class="form-group">

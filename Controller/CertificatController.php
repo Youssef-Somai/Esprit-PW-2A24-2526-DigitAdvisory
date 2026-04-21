@@ -227,4 +227,73 @@ class CertificatController
         }
     }
 }
+
+// ─── ROUTAGE CENTRALISÉ (Si le fichier est appelé directement) ───
+if (basename($_SERVER['PHP_SELF']) === 'CertificatController.php') {
+    $certifController = new CertificatController();
+
+    // ─── ACTIONS GET (Ex: Suppression) ───
+    if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action']) && isset($_GET['id'])) {
+        if ($_GET['action'] === 'delete_certif') {
+            $certifController->deleteCertificat((int) $_GET['id']);
+            header('Location: ../View/BackOffice/back-certification.php?success=delete_certif&tab=certifs');
+            exit;
+        }
+    }
+
+    // ─── ACTIONS POST (Ex: Ajout, Modification, Synchronisation) ───
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
+        // 1. Ajouter Certification
+        if ($_POST['action'] === 'add_certif') {
+            $certificat = new Certificat(
+                null,
+                $_POST['norme'],
+                $_POST['titre'],
+                $_POST['version'] ?? '2022',
+                $_POST['statut'] ?? 'Actif',
+                isset($_POST['duree_validite']) ? (int) $_POST['duree_validite'] : 36,
+                $_POST['description'],
+                $_POST['organisme'],
+                null
+            );
+            $certifController->addCertificat($certificat);
+            header('Location: ../View/BackOffice/back-certification.php?success=add_certif&tab=certifs');
+            exit;
+        }
+
+        // 2. Modifier Certification
+        if ($_POST['action'] === 'update_certif') {
+            $certificat = new Certificat(
+                (int) $_POST['id'],
+                $_POST['norme'],
+                $_POST['titre'],
+                $_POST['version'] ?? '2022',
+                $_POST['statut'] ?? 'Actif',
+                isset($_POST['duree_validite']) ? (int) $_POST['duree_validite'] : 36,
+                $_POST['description'],
+                $_POST['organisme'],
+                $_POST['logo_url'] ?? null
+            );
+            $certifController->updateCertificat($certificat);
+            header('Location: ../View/BackOffice/back-certification.php?success=update_certif&tab=certifs');
+            exit;
+        }
+
+        // 3. Synchroniser les Critères (Many-to-Many)
+        if ($_POST['action'] === 'sync_criteres') {
+            $certificat_id = (int) $_POST['certificat_id'];
+            $criteres_ids = $_POST['criteres'] ?? [];
+            $criteres_avec_poids = [];
+            foreach ($criteres_ids as $c_id) {
+                $poids = isset($_POST['poids_'.$c_id]) ? (int) $_POST['poids_'.$c_id] : 1;
+                $criteres_avec_poids[$c_id] = $poids;
+            }
+            $certifController->syncCriteresForCertificat($certificat_id, $criteres_avec_poids);
+            header('Location: ../View/BackOffice/back-certification.php?success=sync_criteres&tab=certifs');
+            exit;
+        }
+    }
+    header('Location: ../View/BackOffice/back-certification.php');
+    exit;
+}
 ?>

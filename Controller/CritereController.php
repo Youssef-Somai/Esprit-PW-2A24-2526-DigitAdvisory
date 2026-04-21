@@ -128,4 +128,57 @@ class CritereController
         }
     }
 }
+
+// ─── ROUTAGE CENTRALISÉ (Si le fichier est appelé directement) ───
+if (basename($_SERVER['PHP_SELF']) === 'CritereController.php') {
+    $critereController = new CritereController();
+
+    // ─── ACTIONS GET (Ex: Suppression) ───
+    if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action']) && isset($_GET['id'])) {
+        if ($_GET['action'] === 'delete_critere') {
+            $critereController->deleteCritere((int) $_GET['id']);
+            header('Location: ../View/BackOffice/back-certification.php?success=delete_critere&tab=criteres');
+            exit;
+        }
+    }
+
+    // ─── ACTIONS POST (Ex: Ajout, Modification) ───
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
+        // 1. Ajouter Critère
+        if ($_POST['action'] === 'add_critere') {
+            $critere = new Critere(
+                null,
+                $_POST['nom'],
+                $_POST['categorie'] ?? 'Général',
+                $_POST['description'],
+                $_POST['moyen_preuve'] ?? null,
+                isset($_POST['est_obligatoire']) ? 1 : 0,
+                $_POST['difficulte'] ?? 'Moyen',
+                $_POST['document_template'] ?? null
+            );
+            $critereController->addCritere($critere);
+            header('Location: ../View/BackOffice/back-certification.php?success=add_critere&tab=criteres');
+            exit;
+        }
+
+        // 2. Modifier Critère
+        if ($_POST['action'] === 'update_critere') {
+            $critere = new Critere(
+                (int) $_POST['id'],
+                $_POST['nom'],
+                $_POST['categorie'],
+                $_POST['description'],
+                $_POST['moyen_preuve'],
+                isset($_POST['est_obligatoire']) ? 1 : 0,
+                $_POST['difficulte'],
+                $_POST['document_template']
+            );
+            $critereController->updateCritere($critere);
+            header('Location: ../View/BackOffice/back-certification.php?success=update_critere&tab=criteres');
+            exit;
+        }
+    }
+    header('Location: ../View/BackOffice/back-certification.php');
+    exit;
+}
 ?>
