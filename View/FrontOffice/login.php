@@ -255,6 +255,13 @@ if ($register_success) $_SESSION['register_success'] = $register_success;
                         <a href="forgot_password.php" class="text-primary">Mot de passe oublié ?</a>
                     </div>
 
+                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; padding: 0.75rem; border: 1px solid var(--gray-light); border-radius: var(--radius); width: fit-content; background-color: #f9fafb;">
+                        <input type="checkbox" id="robot-checkbox" style="width: 1.25rem; height: 1.25rem; cursor: pointer;">
+                        <label for="robot-checkbox" style="margin: 0; cursor: pointer; font-weight: 500;">I'm not a robot</label>
+                        <span style="font-size: 1.5rem; margin-left: 1rem;">🤖</span>
+                    </div>
+                    <span class="error-text" id="login-captcha-error" style="margin-bottom: 1.5rem; display: block;"></span>
+
                     <button type="submit" class="btn btn-primary btn-block">Se connecter</button>
                 </form>
 
@@ -439,6 +446,14 @@ if ($register_success) $_SESSION['register_success'] = $register_success;
 
             if (password === '') {
                 showLoginError(passwordField, 'Le mot de passe est requis.');
+                valid = false;
+            }
+
+            const robotCheckbox = document.getElementById('robot-checkbox');
+            const captchaError = document.getElementById('login-captcha-error');
+            captchaError.textContent = '';
+            if (!robotCheckbox.checked) {
+                captchaError.textContent = 'Veuillez confirmer que vous n\'êtes pas un robot.';
                 valid = false;
             }
 

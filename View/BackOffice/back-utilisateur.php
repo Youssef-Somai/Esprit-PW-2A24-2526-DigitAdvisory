@@ -30,6 +30,7 @@ $pctEntreprise = $totalRole > 0 ? 100 - $pctExpert : 0;
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../../css/style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         .sidebar { background: var(--dark); color: white; }
         .sidebar .menu-item { color: var(--gray-light); }
@@ -123,17 +124,23 @@ $pctEntreprise = $totalRole > 0 ? 100 - $pctExpert : 0;
             <section class="fade-in-up">
                 <div style="display: flex; justify-content: space-between; align-items: center;" class="mb-2">
                     <h2>Gestion des Utilisateurs</h2>
-                    <a href="addUtilisateur.php" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Ajouter Utilisateur</a>
+                    <div>
+                        <button id="exportPdfBtn" class="btn btn-outline" style="border-color: #dc2626; color: #dc2626; margin-right: 0.5rem;"><i class="fa-solid fa-file-pdf"></i> Exporter PDF</button>
+                        <a href="addUtilisateur.php" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Ajouter Utilisateur</a>
+                    </div>
                 </div>
 
                 <div class="card admin-card hover-zoom">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
                         <input type="text" id="emailSearchInput" placeholder="Rechercher par email..." style="padding: 0.5rem; border: 1px solid var(--gray-light); border-radius: var(--radius); width: 250px;">
-                        <select id="roleSelectInput" style="padding: 0.5rem; border: 1px solid var(--gray-light); border-radius: var(--radius);">
-                            <option value="all">Tous les rôles</option>
-                            <option value="entreprise">Entreprise</option>
-                            <option value="expert">Expert</option>
-                        </select>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button id="sortNameBtn" class="btn btn-outline" style="border: 1px solid var(--gray-light); padding: 0.5rem 1rem; border-radius: var(--radius); cursor: pointer; color: var(--dark);"><i class="fa-solid fa-sort-alpha-down"></i> Trier par nom</button>
+                            <select id="roleSelectInput" style="padding: 0.5rem; border: 1px solid var(--gray-light); border-radius: var(--radius);">
+                                <option value="all">Tous les rôles</option>
+                                <option value="entreprise">Entreprise</option>
+                                <option value="expert">Expert</option>
+                            </select>
+                        </div>
                     </div>
                     <table class="data-table">
                         <thead>
@@ -177,10 +184,20 @@ $pctEntreprise = $totalRole > 0 ? 100 - $pctExpert : 0;
                                         <?php endif; ?>
                                     </td>
                                     <td>
-
+                                        <form action="../traitement/banUtilisateurTraitement.php" method="POST" style="display:inline;">
+                                            <input type="hidden" name="id_user" value="<?php echo htmlspecialchars($u['id_user']); ?>">
+                                            <?php $isBanned = in_array(strtolower($u['statut_compte'] ?? ''), ['désactivé', 'banni', 'ban', 'banned', 'suspendu', '']); ?>
+                                            <?php if ($isBanned): ?>
+                                                <input type="hidden" name="new_status" value="actif">
+                                                <button type="submit" class="btn btn-outline btn-sm" style="color:var(--success); border-color:var(--success);" title="Débannir" onclick="return confirm('Débannir cet utilisateur et restaurer son accès ?');"><i class="fa-solid fa-unlock"></i> Débannir</button>
+                                            <?php else: ?>
+                                                <input type="hidden" name="new_status" value="désactivé">
+                                                <button type="submit" class="btn btn-outline btn-sm" style="color:var(--warning); border-color:var(--warning);" title="Bannir" onclick="return confirm('Bannir cet utilisateur ? Il ne pourra plus se connecter.');"><i class="fa-solid fa-ban"></i> Bannir</button>
+                                            <?php endif; ?>
+                                        </form>
                                         <form action="../traitement/deleteUtilisateurTraitement.php" method="POST" style="display:inline;">
                                             <input type="hidden" name="id_user" value="<?php echo htmlspecialchars($u['id_user']); ?>">
-                                            <button type="submit" class="btn btn-outline btn-sm" style="color:var(--danger); border-color:var(--danger);" onclick="return confirm('Supprimer cet utilisateur ?');"><i class="fa-solid fa-trash"></i></button>
+                                            <button type="submit" class="btn btn-outline btn-sm" style="color:var(--danger); border-color:var(--danger);" title="Supprimer" onclick="return confirm('Supprimer cet utilisateur ?');"><i class="fa-solid fa-trash"></i></button>
                                         </form>
                                     </td>
                                 </tr>
@@ -294,6 +311,79 @@ $pctEntreprise = $totalRole > 0 ? 100 - $pctExpert : 0;
             function updatePagination() {
                 displayPage();
                 setupPagination();
+            }
+
+            // --- Sort by name ---
+            let sortOrderAsc = true;
+            const sortNameBtn = document.getElementById('sortNameBtn');
+            if (sortNameBtn) {
+                sortNameBtn.addEventListener('click', function() {
+                    sortOrderAsc = !sortOrderAsc;
+                    this.innerHTML = sortOrderAsc ? '<i class="fa-solid fa-sort-alpha-down"></i> Trier par nom' : '<i class="fa-solid fa-sort-alpha-up"></i> Trier par nom';
+                    
+                    filteredRows.sort((a, b) => {
+                        const nameA = a.cells[1].textContent.trim().toLowerCase();
+                        const nameB = b.cells[1].textContent.trim().toLowerCase();
+                        if (nameA < nameB) return sortOrderAsc ? -1 : 1;
+                        if (nameA > nameB) return sortOrderAsc ? 1 : -1;
+                        return 0;
+                    });
+                    
+                    // Re-append to DOM to visually sort the table rows
+                    filteredRows.forEach(row => tableBody.appendChild(row));
+                    
+                    currentPage = 1;
+                    displayPage();
+                    setupPagination();
+                });
+            }
+
+            // --- Export to PDF ---
+            const exportPdfBtn = document.getElementById('exportPdfBtn');
+            if (exportPdfBtn) {
+                exportPdfBtn.addEventListener('click', function() {
+                    const table = document.querySelector('.data-table');
+                    const clone = table.cloneNode(true);
+                    
+                    const rowsToRemove = clone.querySelectorAll('tbody tr');
+                    rowsToRemove.forEach(tr => {
+                        if (tr.id === 'noResultsRow') return;
+                        tr.remove();
+                    });
+                    
+                    const tbody = clone.querySelector('tbody');
+                    filteredRows.forEach(row => {
+                        tbody.appendChild(row.cloneNode(true));
+                    });
+
+                    // Remove Actions column
+                    clone.querySelectorAll('th:last-child, td:last-child').forEach(el => el.remove());
+
+                    const wrapper = document.createElement('div');
+                    wrapper.style.padding = '20px';
+                    wrapper.style.background = 'white';
+                    
+                    const title = document.createElement('h2');
+                    title.textContent = 'Liste des Utilisateurs';
+                    title.style.marginBottom = '20px';
+                    title.style.fontFamily = 'sans-serif';
+                    wrapper.appendChild(title);
+                    
+                    wrapper.appendChild(clone);
+                    
+                    const clonedRows = clone.querySelectorAll('tr');
+                    clonedRows.forEach(tr => tr.style.display = ''); // ensure they are visible
+
+                    const opt = {
+                        margin:       0.5,
+                        filename:     'utilisateurs.pdf',
+                        image:        { type: 'jpeg', quality: 0.98 },
+                        html2canvas:  { scale: 2 },
+                        jsPDF:        { unit: 'in', format: 'letter', orientation: 'landscape' }
+                    };
+                    
+                    html2pdf().set(opt).from(wrapper).save();
+                });
             }
 
             if (searchInput && roleSelectInput && tableBody) {
