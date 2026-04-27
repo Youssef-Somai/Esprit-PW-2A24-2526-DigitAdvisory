@@ -1,9 +1,7 @@
 <?php
 session_start();
 
-// ------------------------------
-// 1) Vérification des données POST
-// ------------------------------
+
 if (
     !isset($_POST['titre']) ||
     !isset($_POST['theme']) ||
@@ -33,16 +31,10 @@ if (
     die("Veuillez remplir correctement tous les champs.");
 }
 
-// ------------------------------
-// 2) Clé API Gemini
-// ------------------------------
-//$apiKey = 'AIzaSyBA04q0DzF2_gLBFdMPvn4PRvoTRqDwk6k';
-$apiKey = 'AIzaSyDgNrznkuLM1u6hGzWf9yFWwt1ueQzsQtQ';
-// ------------------------------
-// 3) Prompt
-// Ton système actuel utilise :
-// question, choix1, choix2, choix3, bonne_reponse, point
-// ------------------------------
+
+
+$apiKey = '';
+
 $prompt = "
 Génère un quiz en {$langue} sur le thème : {$theme}.
 
@@ -76,9 +68,7 @@ Format JSON exact :
 }
 ";
 
-// ------------------------------
-// 4) Appel API Gemini
-// ------------------------------
+
 $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent";
 
 
@@ -114,9 +104,7 @@ if (curl_errno($ch)) {
 $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 curl_close($ch);
 
-// ------------------------------
-// 5) Vérification réponse brute
-// ------------------------------
+
 if ($response === false || $response === '') {
     die("Réponse vide de l'API.");
 }
@@ -131,9 +119,7 @@ if ($responseData === null) {
     exit;
 }
 
-// ------------------------------
-// 6) Si l'API renvoie une erreur
-// ------------------------------
+
 if (isset($responseData['error'])) {
     echo "<pre>";
     echo "Erreur API :\n";
@@ -150,9 +136,7 @@ if ($httpCode !== 200) {
     exit;
 }
 
-// ------------------------------
-// 7) Extraction du texte IA
-// ------------------------------
+
 $jsonText = '';
 
 if (isset($responseData['candidates'][0]['content']['parts'][0]['text'])) {
@@ -165,18 +149,14 @@ if (isset($responseData['candidates'][0]['content']['parts'][0]['text'])) {
     exit;
 }
 
-// ------------------------------
-// 8) Nettoyage si Gemini renvoie ```json ... ```
-// ------------------------------
+
 $jsonText = trim($jsonText);
 $jsonText = preg_replace('/^```json\s*/i', '', $jsonText);
 $jsonText = preg_replace('/^```\s*/', '', $jsonText);
 $jsonText = preg_replace('/\s*```$/', '', $jsonText);
 $jsonText = trim($jsonText);
 
-// ------------------------------
-// 9) Décodage du JSON du quiz
-// ------------------------------
+
 $quizData = json_decode($jsonText, true);
 
 if ($quizData === null || !isset($quizData['questions']) || !is_array($quizData['questions'])) {
@@ -190,9 +170,7 @@ if ($quizData === null || !isset($quizData['questions']) || !is_array($quizData[
     exit;
 }
 
-// ------------------------------
-// 10) Sauvegarde en session
-// ------------------------------
+
 $_SESSION['quiz_ai_generated'] = $quizData;
 ?>
 
