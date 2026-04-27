@@ -52,6 +52,24 @@ $questions = $queryQuestions->fetchAll(PDO::FETCH_ASSOC);
         }
         .choice:hover { background: #eff6ff; border-color: var(--primary); }
         .submit-box { text-align: center; margin-top: 2rem; }
+        .voice-btn {
+    border: none;
+    background: linear-gradient(135deg, #2563eb, #60a5fa);
+    color: white;
+    padding: 8px 14px;
+    border-radius: 999px;
+    cursor: pointer;
+    margin-bottom: 15px;
+    transition: .3s;
+}
+
+.voice-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 14px rgba(37,99,235,.25);
+}
+
+
+
     </style>
 </head>
 <body>
@@ -68,6 +86,19 @@ $questions = $queryQuestions->fetchAll(PDO::FETCH_ASSOC);
             <?php foreach ($questions as $index => $question) { ?>
                 <div class="question-box">
                     <h4>Question <?= $index + 1 ?> : <?= htmlspecialchars($question['question']) ?></h4>
+                
+                   <button type="button"
+                 class="voice-btn voice-question-btn"
+                data-question="<?= htmlspecialchars($question['question'], ENT_QUOTES, 'UTF-8') ?>"
+                 data-id="<?= (int)$question['id_question'] ?>">
+              🔊 Lire + Répondre
+             </button>
+                  
+
+
+
+
+
 
                     <label class="choice">
                         <input type="radio" name="reponse[<?= (int)$question['id_question'] ?>]" value="1">
@@ -101,5 +132,155 @@ $questions = $queryQuestions->fetchAll(PDO::FETCH_ASSOC);
         <?php } ?>
     </form>
 </div>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll(".voice-question-btn").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+            const questionText = this.getAttribute("data-question");
+            const questionId = this.getAttribute("data-id");
+            readAndAnswer(questionText, questionId);
+        });
+    });
+});
+
+let recognition = null;
+let isListening = false;
+
+function readAndAnswer(text, questionId) {
+    stopVoice();
+
+    const speech = new SpeechSynthesisUtterance(text);
+    speech.lang = "fr-FR";
+    speech.rate = 1;
+
+    speech.onend = function () {
+        setTimeout(function () {
+            startVoiceAnswer(questionId);
+        }, 300);
+    };
+
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(speech);
+}
+
+function startVoiceAnswer(questionId) {
+    stopVoice();
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+        alert("Votre navigateur ne supporte pas la reconnaissance vocale.");
+        return;
+    }
+
+    recognition = new SpeechRecognition();
+    recognition.lang = "fr-FR";
+    recognition.interimResults = false;
+    recognition.continuous = false;
+    recognition.maxAlternatives = 1;
+
+    isListening = true;
+
+    recognition.onresult = function (event) {
+        const text = event.results[0][0].transcript.toLowerCase().trim();
+
+        console.log("Réponse vocale :", text);
+
+        if (text.includes("1") || text.includes("un")) {
+            selectAnswer(questionId, 1);
+        } else if (text.includes("2") || text.includes("deux")) {
+            selectAnswer(questionId, 2);
+        } else if (text.includes("3") || text.includes("trois")) {
+            selectAnswer(questionId, 3);
+        } else if (text.includes("4") || text.includes("quatre")) {
+            selectAnswer(questionId, 4);
+        } else {
+            alert("Réponse non comprise. Dites : 1, 2, 3 ou 4.");
+        }
+
+        stopVoice();
+    };
+
+    recognition.onerror = function (event) {
+        console.log("Erreur micro exacte :", event.error);
+
+        if (event.error === "not-allowed") {
+            alert("Micro refusé. Autorisez le micro dans le navigateur.");
+        } else if (event.error === "no-speech") {
+            alert("Aucune voix détectée. Parlez plus clairement.");
+        } else if (event.error === "network") {
+            alert("Problème réseau ou navigateur non compatible.");
+        } else {
+            alert("Erreur micro : " + event.error);
+        }
+
+        isListening = false;
+    };
+
+    recognition.onend = function () {
+        isListening = false;
+    };
+
+    recognition.start();
+}
+
+function stopVoice() {
+    if (window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+    }
+
+    if (recognition && isListening) {
+        try {
+            recognition.stop();
+        } catch (e) {}
+    }
+
+    isListening = false;
+}
+
+function selectAnswer(questionId, value) {
+    const input = document.querySelector(
+        "input[name='reponse[" + questionId + "]'][value='" + value + "']"
+    );
+
+    console.log("Question ID:", questionId);
+    console.log("Réponse:", value);
+    console.log("Input trouvé:", input);
+
+    if (input) {
+        input.checked = true;
+        input.dispatchEvent(new Event("change"));
+    } else {
+        alert("Réponse introuvable. Vérifie le name des boutons radio.");
+    }
+}
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 </body>
 </html>

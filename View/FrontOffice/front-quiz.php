@@ -83,7 +83,7 @@ $quizzes = $query->fetchAll(PDO::FETCH_ASSOC);
         <?php if (!empty($quizzes)) { ?>
             <section class="quiz-grid">
                 <?php foreach ($quizzes as $quiz) { ?>
-                    <div class="quiz-item">
+                   <div class="quiz-item">
                         <img src="/Esprit-PW-2A24-2526-DigitAdvisory/uploads/<?= htmlspecialchars($quiz['image']) ?>" alt="<?= htmlspecialchars($quiz['titre']) ?>">
                         <div class="quiz-body">
                             <h3><?= htmlspecialchars($quiz['titre']) ?></h3>

@@ -10,56 +10,62 @@ if (isset($_POST['submit'])) {
     $titre = trim($_POST['titre']);
     $description = trim($_POST['description']);
 
-    if (
-        $titre !== '' &&
-        $description !== '' &&
-        isset($_FILES['image']) &&
-        $_FILES['image']['error'] == 0
-    ) {
-        $imageName = $_FILES['image']['name'];
-        $tmpName = $_FILES['image']['tmp_name'];
+    if ($titre !== '' && $description !== '') {
 
-        $uploadDir = "../../uploads/";
+        
+        $uploadDir = __DIR__ . "/../../uploads/";
 
-        if (!is_dir($uploadDir)) {
-            mkdir($uploadDir, 0777, true);
+       
+        if (!file_exists($uploadDir)) {
+            $error = "Le dossier uploads n'existe pas.";
         }
 
-        $imageName = time() . "_" . basename($imageName);
-        $uploadPath = $uploadDir . $imageName;
+        
+        $imageName = "default.jpg";
 
-        $allowedExtensions = ['jpg', 'jpeg', 'png', 'webp'];
-        $imageExtension = strtolower(pathinfo($imageName, PATHINFO_EXTENSION));
+       
+        if (isset($_FILES['image']) && $_FILES['image']['error'] == 0) {
 
-        if (in_array($imageExtension, $allowedExtensions)) {
+            $originalName = $_FILES['image']['name'];
+            $tmpName = $_FILES['image']['tmp_name'];
 
-            if (move_uploaded_file($tmpName, $uploadPath)) {
+            $imageName = time() . "_" . basename($originalName);
+            $uploadPath = $uploadDir . $imageName;
 
-                $date_creation = date('Y-m-d H:i:s');
+            $allowedExtensions = ['jpg', 'jpeg', 'png', 'webp'];
+            $imageExtension = strtolower(pathinfo($imageName, PATHINFO_EXTENSION));
 
-                $quiz = new Quiz(
-                    null,
-                    $titre,
-                    $description,
-                    $imageName,
-                    $date_creation
-                );
+            if (in_array($imageExtension, $allowedExtensions)) {
 
-                $quizC->addQuiz($quiz);
-
-                header('Location: back-quiz.php');
-                exit();
+                if (!move_uploaded_file($tmpName, $uploadPath)) {
+                    $error = "Erreur lors du téléchargement de l'image.";
+                }
 
             } else {
-                $error = "Erreur lors du téléchargement de l'image.";
+                $error = "Format image invalide. Formats autorisés : jpg, jpeg, png, webp.";
             }
+        }
 
-        } else {
-            $error = "Format image invalide. Formats autorisés : jpg, jpeg, png, webp.";
+        
+        if ($error === "") {
+            $date_creation = date('Y-m-d H:i:s');
+
+            $quiz = new Quiz(
+                null,
+                $titre,
+                $description,
+                $imageName,
+                $date_creation
+            );
+
+            $quizC->addQuiz($quiz);
+
+            header('Location: back-quiz.php');
+            exit();
         }
 
     } else {
-        $error = "Veuillez remplir tous les champs.";
+        $error = "Veuillez remplir le titre et la description.";
     }
 }
 ?>

@@ -80,35 +80,35 @@ document.addEventListener("DOMContentLoaded", function () {
         setSuccess(description, descriptionError);
         return true;
     }
-
     function validateImage() {
-        if (!image.files || image.files.length === 0) {
-            setError(image, imageError, "L'image est obligatoire.");
-            return false;
-        }
-
-        const file = image.files[0];
-        const fileName = file.name.trim();
-
-        if (fileName.length > 255) {
-            setError(image, imageError, "Le nom de l'image est trop long.");
-            return false;
-        }
-
-        if (!imagePattern.test(fileName)) {
-            setError(image, imageError, "Format invalide. Formats autorisés : jpg, jpeg, png, webp.");
-            return false;
-        }
-
-        // refuse explicitement gif
-        if (/\.gif$/i.test(fileName)) {
-            setError(image, imageError, "Le format GIF n'est pas autorisé.");
-            return false;
-        }
-
+   
+    if (!image.files || image.files.length === 0) {
         setSuccess(image, imageError);
         return true;
     }
+
+    const file = image.files[0];
+    const fileName = file.name.trim();
+
+    if (fileName.length > 255) {
+        setError(image, imageError, "Le nom de l'image est trop long.");
+        return false;
+    }
+
+    if (!imagePattern.test(fileName)) {
+        setError(image, imageError, "Format invalide. Formats autorisés : jpg, jpeg, png, webp.");
+        return false;
+    }
+
+    // refuse explicitement gif
+    if (/\.gif$/i.test(fileName)) {
+        setError(image, imageError, "Le format GIF n'est pas autorisé.");
+        return false;
+    }
+
+    setSuccess(image, imageError);
+    return true;
+}
 
     titre.addEventListener("input", validateTitre);
     titre.addEventListener("blur", validateTitre);

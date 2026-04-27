@@ -94,7 +94,7 @@ if (isset($_POST['submit'])) {
         </div>
     </aside>
 
-    <!-- Main -->
+    
     <main class="main-content">
 
         <div class="top-navbar">
