@@ -6,7 +6,33 @@ $sql = "SELECT * FROM quiz ORDER BY id_quiz DESC";
 $query = $db->prepare($sql);
 $query->execute();
 $quizzes = $query->fetchAll(PDO::FETCH_ASSOC);
+
+
+$list = $quizzes;
+
+$itemsPerPage = 3;
+$currentPage = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+
+if ($currentPage < 1) {
+    $currentPage = 1;
+}
+
+
+$totalQuiz = count($list);
+$totalPages = ceil($totalQuiz / $itemsPerPage);
+
+if ($totalPages < 1) {
+    $totalPages = 1;
+}
+
+if ($currentPage > $totalPages) {
+    $currentPage = $totalPages;
+}
+
+$offset = ($currentPage - 1) * $itemsPerPage;
+$list = array_slice($list, $offset, $itemsPerPage);
 ?>
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -29,30 +55,115 @@ $quizzes = $query->fetchAll(PDO::FETCH_ASSOC);
         .user-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--primary); color: white; display: flex; justify-content: center; align-items: center; font-weight: 600; }
         .main-content { flex: 1; margin-left: 280px; padding: 2rem; }
         .top-navbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; background: white; padding: 1rem 2rem; border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); }
-        .quiz-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; }
-        .quiz-item {
-            background: white;
-            border-radius: 18px;
-            overflow: hidden;
-            box-shadow: var(--shadow-sm);
-            transition: .25s ease;
-        }
-        .quiz-item:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
-        .quiz-item img {
-            width: 100%;
-            height: 190px;
-            object-fit: cover;
-        }
-        .quiz-body { padding: 1.25rem; }
-        .quiz-body h3 { margin-bottom: .75rem; }
-        .quiz-body p { color: var(--gray); margin-bottom: 1rem; min-height: 60px; }
-        .empty-box {
-            background: white;
-            padding: 2rem;
-            text-align: center;
-            border-radius: 18px;
-            box-shadow: var(--shadow-sm);
-        }
+        /* ===== Cartes Quiz Design Pro ===== */
+.quiz-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 28px;
+}
+
+.quiz-item {
+    background: #ffffff;
+    border-radius: 22px;
+    overflow: hidden;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.quiz-item:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 18px 45px rgba(37, 99, 235, 0.18);
+    border-color: #bfdbfe;
+}
+
+.quiz-item img {
+    width: 100%;
+    height: 210px;
+    object-fit: cover;
+    transition: all 0.35s ease;
+}
+
+.quiz-item:hover img {
+    transform: scale(1.05);
+}
+
+.quiz-body {
+    padding: 24px;
+}
+
+.quiz-body h3 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 12px;
+    line-height: 1.4;
+}
+
+.quiz-body p {
+    color: #64748b;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin-bottom: 22px;
+    min-height: 70px;
+}
+
+.quiz-body .btn {
+    width: 100%;
+    justify-content: center;
+    padding: 12px 18px;
+    border-radius: 14px;
+    font-weight: 600;
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    border: none;
+    box-shadow: 0 8px 20px rgba(37, 99, 235, 0.28);
+    transition: all 0.25s ease;
+}
+
+.quiz-body .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 28px rgba(37, 99, 235, 0.38);
+}
+
+/* ===== Pagination flèches seulement ===== */
+.pagination-front {
+    margin-top: 45px;
+    display: flex;
+    justify-content: center;
+    gap: 14px;
+}
+
+.pagination-front a {
+    width: 46px;
+    height: 46px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #ffffff;
+    border: 1px solid #bfdbfe;
+    border-radius: 50%;
+    color: #2563eb;
+    text-decoration: none;
+    font-size: 0;
+    box-shadow: 0 8px 20px rgba(37, 99, 235, 0.16);
+    transition: all 0.25s ease;
+}
+
+.pagination-front a i {
+    font-size: 16px;
+}
+
+.pagination-front a:hover {
+    background: #2563eb;
+    color: #ffffff;
+    transform: translateY(-3px);
+    box-shadow: 0 12px 25px rgba(37, 99, 235, 0.35);
+}
+
+.pagination-front a:not(:first-child):not(:last-child) {
+    display: none;
+}
     </style>
 </head>
 <body>
@@ -80,9 +191,9 @@ $quizzes = $query->fetchAll(PDO::FETCH_ASSOC);
             <h2 style="margin: 0; font-size: 1.5rem;">Questionnaires disponibles</h2>
         </div>
 
-        <?php if (!empty($quizzes)) { ?>
+        <?php if (!empty($list)) { ?>
             <section class="quiz-grid">
-                <?php foreach ($quizzes as $quiz) { ?>
+                <?php foreach ($list as $quiz) { ?>
                    <div class="quiz-item">
                         <img src="/Esprit-PW-2A24-2526-DigitAdvisory/uploads/<?= htmlspecialchars($quiz['image']) ?>" alt="<?= htmlspecialchars($quiz['titre']) ?>">
                         <div class="quiz-body">
@@ -95,10 +206,30 @@ $quizzes = $query->fetchAll(PDO::FETCH_ASSOC);
                     </div>
                 <?php } ?>
             </section>
+            
+            <?php if ($totalPages > 1) { ?>
+            <div class="pagination-front">
+                <?php if ($currentPage > 1) { ?>
+                    <a href="?page=<?= $currentPage - 1 ?>"><i class="fa-solid fa-chevron-left"></i> Précédent</a>
+                <?php } ?>
+
+                <?php for ($i = 1; $i <= $totalPages; $i++) { ?>
+                    <a href="?page=<?= $i ?>" class="<?= $i == $currentPage ? 'active' : '' ?>">
+                        <?= $i ?>
+                    </a>
+                <?php } ?>
+
+                <?php if ($currentPage < $totalPages) { ?>
+                    <a href="?page=<?= $currentPage + 1 ?>">Suivant <i class="fa-solid fa-chevron-right"></i></a>
+                <?php } ?>
+            </div>
+            <?php } ?>
+
         <?php } else { ?>
             <div class="empty-box">
+                <i class="fa-solid fa-folder-open" style="font-size: 3rem; color: var(--gray-light); margin-bottom: 1rem;"></i>
                 <h3>Aucun quiz disponible</h3>
-                <p>Les quiz ajoutés par l’admin apparaîtront ici automatiquement.</p>
+                <p>Les quiz ajoutés par l'admin apparaîtront ici automatiquement.</p>
             </div>
         <?php } ?>
     </main>

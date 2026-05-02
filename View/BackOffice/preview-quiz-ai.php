@@ -33,7 +33,7 @@ if (
 
 
 
-$apiKey = '';
+
 
 $prompt = "
 Génère un quiz en {$langue} sur le thème : {$theme}.
@@ -67,9 +67,9 @@ Format JSON exact :
   ]
 }
 ";
+//URL
 
 
-$url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent";
 
 
 $payload = [
