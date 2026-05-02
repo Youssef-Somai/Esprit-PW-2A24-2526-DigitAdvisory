@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 session_start();
 require_once __DIR__ . '/../../config.php';
 require_once __DIR__ . '/../../Controller/utilisateur_controller.php';
@@ -95,6 +95,7 @@ $tarifJournalier = htmlspecialchars($user['tarif_journalier'] ?? '');
                         <p><strong>Tarif journalier :</strong> <?= $tarifJournalier ? htmlspecialchars($tarifJournalier) . ' €' : 'Non précisé' ?></p>
                         <div class="profile-actions">
                             <a href="front-expert-profil.php" class="btn btn-primary"><i class="fa-solid fa-pen"></i> Modifier le profil</a>
+                            <a href="setup_face_id.php" class="btn btn-secondary" style="color: var(--secondary); border-color: var(--secondary);"><i class="fa-solid fa-face-smile"></i> Configurer Face ID</a>
                             <form action="../traitement/deleteProfileUtilisateurTraitement.php" method="POST" onsubmit="return confirm('Voulez-vous vraiment supprimer votre compte ?');" style="margin:0;">
                                 <input type="hidden" name="id_user" value="<?= $user['id_user'] ?>">
                                 <button type="submit" class="btn btn-secondary" style="color: var(--danger); border-color: var(--danger);"><i class="fa-solid fa-trash"></i> Supprimer le compte</button>

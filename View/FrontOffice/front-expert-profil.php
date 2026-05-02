@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 session_start();
 require_once __DIR__ . '/../../config.php';
 require_once __DIR__ . '/../../Controller/utilisateur_controller.php';
@@ -133,8 +133,9 @@ $avatarText = strtoupper(substr(trim($user['prenom'] ?: $user['email']), 0, 2));
                                 <span class="error-text" id="password-error"></span>
                             </div>
                         </div>
-                        <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
-                            <button type="submit" class="btn btn-primary pulse-glow"><i class="fa-solid fa-pen"></i> Modifier le profil</button>
+                        <div style="display: flex; gap: 1rem; margin-top: 1.5rem; align-items: center;">
+                            <button type="submit" class="btn btn-primary pulse-glow" style="border-radius: 25px;"><i class="fa-solid fa-pen"></i> Modifier le profil</button>
+                            <a href="setup_face_id.php" class="btn" style="color: #0ea5e9; border: 1px solid #0ea5e9; background: white; text-decoration: none; border-radius: 25px; display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; font-weight: 600;"><i class="fa-solid fa-face-smile"></i> Configurer Face ID</a>
                         </div>
                     </form>
                 </div>

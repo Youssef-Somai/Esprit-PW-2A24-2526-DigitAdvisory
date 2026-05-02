@@ -223,10 +223,14 @@ if ($register_success) $_SESSION['register_success'] = $register_success;
                     <div class="login-error" style="background-color: #fee2e2; color: #991b1b; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; text-align: center; border: 1px solid #fca5a5; font-weight: 500;">
                         <?php
                             $msg = 'Une erreur est survenue, veuillez réessayer.';
-                            if ($_SESSION['login_error'] == 1) {
+                            $err = (string)$_SESSION['login_error'];
+                            if ($err === '1') {
                                 $msg = 'Email ou mot de passe incorrect.';
-                            } elseif ($_SESSION['login_error'] == 2) {
+                            } elseif ($err === '2') {
                                 $msg = 'Ce compte est désactivé.';
+                            } elseif (strpos($err, 'locked:') === 0) {
+                                $parts = explode(':', $err);
+                                $msg = 'Compte bloqué pendant 5 minutes. Temps restant : ' . $parts[1] . 'm ' . $parts[2] . 's.';
                             }
                             echo $msg;
                         ?>
@@ -263,6 +267,12 @@ if ($register_success) $_SESSION['register_success'] = $register_success;
                     <span class="error-text" id="login-captcha-error" style="margin-bottom: 1.5rem; display: block;"></span>
 
                     <button type="submit" class="btn btn-primary btn-block">Se connecter</button>
+                    
+                    <div style="text-align: center; margin-top: 1rem;">
+                        <a href="login_face_id.php" style="display: inline-block; width: 100%; padding: 0.75rem 1.5rem; background: #0f172a; color: white; border-radius: var(--radius); text-decoration: none; font-weight: 500;">
+                            <i class="fa-solid fa-face-viewfinder"></i> Se connecter avec Face ID
+                        </a>
+                    </div>
                 </form>
 
                 <!-- REGISTER -->

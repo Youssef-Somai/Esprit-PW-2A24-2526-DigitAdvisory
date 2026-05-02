@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 session_start();
 if (empty($_SESSION['user']['id_user'])) {
     header('Location: login.php');
@@ -70,7 +70,10 @@ if (strtolower($_SESSION['user']['role'] ?? '') === 'expert') {
                     <h2 style="margin: 0; font-size: 1.8rem; color: var(--dark);">Bonjour, TechCorp <span style="font-size:1.5rem;">👋</span></h2>
                     <p style="color:var(--gray); font-size:0.9rem;">Voici le résumé de vos activités sur Digit Advisory.</p>
                 </div>
-                <button class="btn btn-primary pulse-glow"><i class="fa-solid fa-plus"></i> Créer une Offre</button>
+                <div style="display: flex; gap: 1rem;">
+                    <a href="setup_face_id.php" class="btn btn-secondary" style="color: var(--secondary); border: 1px solid var(--secondary); background: white; text-decoration: none; display: flex; align-items: center; gap: 0.5rem;"><i class="fa-solid fa-face-smile"></i> Configurer Face ID</a>
+                    <button class="btn btn-primary pulse-glow"><i class="fa-solid fa-plus"></i> Créer une Offre</button>
+                </div>
             </div>
 
             <section class="fade-in-up delay-1">
