@@ -363,11 +363,35 @@ $pctEntreprise = $totalRole > 0 ? 100 - $pctExpert : 0;
                     wrapper.style.padding = '20px';
                     wrapper.style.background = 'white';
                     
+                    const headerContainer = document.createElement('div');
+                    headerContainer.style.display = 'flex';
+                    headerContainer.style.alignItems = 'center';
+                    headerContainer.style.justifyContent = 'center';
+                    headerContainer.style.position = 'relative';
+                    headerContainer.style.marginBottom = '30px';
+
+                    const logoContainer = document.createElement('div');
+                    logoContainer.style.position = 'absolute';
+                    logoContainer.style.left = '0';
+                    logoContainer.style.top = '50%';
+                    logoContainer.style.transform = 'translateY(-50%)';
+                    logoContainer.style.color = '#2563eb';
+                    logoContainer.style.fontSize = '24px';
+                    logoContainer.style.fontWeight = 'bold';
+                    logoContainer.style.fontFamily = 'sans-serif';
+                    logoContainer.innerHTML = '<i class="fa-solid fa-chart-pie"></i> Digit Advisory';
+
                     const title = document.createElement('h2');
                     title.textContent = 'Liste des Utilisateurs';
-                    title.style.marginBottom = '20px';
+                    title.style.margin = '0';
                     title.style.fontFamily = 'sans-serif';
-                    wrapper.appendChild(title);
+                    title.style.color = '#2563eb';
+                    title.style.fontWeight = 'bold';
+
+                    headerContainer.appendChild(logoContainer);
+                    headerContainer.appendChild(title);
+                    
+                    wrapper.appendChild(headerContainer);
                     
                     wrapper.appendChild(clone);
                     

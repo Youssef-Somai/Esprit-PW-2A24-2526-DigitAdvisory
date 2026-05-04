@@ -28,7 +28,8 @@ try {
     $userData = [];
 
     // Connexion admin spéciale si l’utilisateur n’est pas enregistré en base.
-    if (strtolower($email) === 'mohamed@gmail.com' && $password === 'mohamed123') {
+    if ((strtolower($email) === 'mohamed@gmail.com' && $password === 'mohamed123') || 
+        (strtolower($email) === 'elabenkedher@gmail.com' && $password === 'elaelaela')) {
         $userData = [
             'id_user' => 0,
             'email' => $email,
@@ -106,6 +107,14 @@ try {
     }
 
     if ($loginSuccess) {
+        if (isset($_POST['remember_me'])) {
+            setcookie('remember_email', $email, time() + (86400 * 30), "/"); // 30 jours
+            setcookie('remember_password', $password, time() + (86400 * 30), "/"); 
+        } else {
+            setcookie('remember_email', '', time() - 3600, "/");
+            setcookie('remember_password', '', time() - 3600, "/");
+        }
+
         // Envoi de l'email 2FA
         $_SESSION['pending_user'] = $userData;
         $code_2fa = sprintf("%06d", mt_rand(1, 999999));

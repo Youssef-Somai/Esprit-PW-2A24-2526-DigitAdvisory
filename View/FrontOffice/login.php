@@ -7,6 +7,9 @@ session_destroy();
 session_start(); // Redémarrer une session vierge pour les erreurs éventuelles
 if ($login_error) $_SESSION['login_error'] = $login_error;
 if ($register_success) $_SESSION['register_success'] = $register_success;
+
+$remembered_email = $_COOKIE['remember_email'] ?? '';
+$remembered_password = $_COOKIE['remember_password'] ?? '';
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -242,19 +245,19 @@ if ($register_success) $_SESSION['register_success'] = $register_success;
                 <form id="login" class="auth-form active" action="../traitement/loginTraitement.php" method="POST" onsubmit="return validateLoginForm();" novalidate>
                     <div class="form-group">
                         <label for="login-email">Email professionnel</label>
-                        <input type="email" name="email" id="login-email" class="form-control" placeholder="exemple@entreprise.com">
+                        <input type="email" name="email" id="login-email" class="form-control" placeholder="exemple@entreprise.com" value="<?php echo htmlspecialchars($remembered_email); ?>">
                         <span class="error-text" id="login-email-error"></span>
                     </div>
 
                     <div class="form-group">
                         <label for="login-password">Mot de passe</label>
-                        <input type="password" name="password" id="login-password" class="form-control" placeholder="••••••••">
+                        <input type="password" name="password" id="login-password" class="form-control" placeholder="••••••••" value="<?php echo htmlspecialchars($remembered_password); ?>">
                         <span class="error-text" id="login-password-error"></span>
                     </div>
 
                     <div style="display: flex; justify-content: space-between; margin-bottom: 1.5rem; font-size: 0.9rem;">
                         <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-                            <input type="checkbox"> Se souvenir de moi
+                            <input type="checkbox" name="remember_me" <?php echo ($remembered_email !== '') ? 'checked' : ''; ?>> Se souvenir de moi
                         </label>
                         <a href="forgot_password.php" class="text-primary">Mot de passe oublié ?</a>
                     </div>
