@@ -7,7 +7,6 @@ $query = $db->prepare($sql);
 $query->execute();
 $quizzes = $query->fetchAll(PDO::FETCH_ASSOC);
 
-
 $list = $quizzes;
 
 $itemsPerPage = 3;
@@ -16,7 +15,6 @@ $currentPage = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 if ($currentPage < 1) {
     $currentPage = 1;
 }
-
 
 $totalQuiz = count($list);
 $totalPages = ceil($totalQuiz / $itemsPerPage);
@@ -55,115 +53,118 @@ $list = array_slice($list, $offset, $itemsPerPage);
         .user-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--primary); color: white; display: flex; justify-content: center; align-items: center; font-weight: 600; }
         .main-content { flex: 1; margin-left: 280px; padding: 2rem; }
         .top-navbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; background: white; padding: 1rem 2rem; border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); }
-        /* ===== Cartes Quiz Design Pro ===== */
-.quiz-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 28px;
-}
 
-.quiz-item {
-    background: #ffffff;
-    border-radius: 22px;
-    overflow: hidden;
-    border: 1px solid #e5e7eb;
-    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
-    transition: all 0.3s ease;
-    position: relative;
-}
+        .quiz-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 28px;
+        }
 
-.quiz-item:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 18px 45px rgba(37, 99, 235, 0.18);
-    border-color: #bfdbfe;
-}
+        .quiz-item {
+            background: #ffffff;
+            border-radius: 22px;
+            overflow: hidden;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+            transition: all 0.3s ease;
+            position: relative;
+        }
 
-.quiz-item img {
-    width: 100%;
-    height: 210px;
-    object-fit: cover;
-    transition: all 0.35s ease;
-}
+        .quiz-item:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 18px 45px rgba(37, 99, 235, 0.18);
+            border-color: #bfdbfe;
+        }
 
-.quiz-item:hover img {
-    transform: scale(1.05);
-}
+        .quiz-item img {
+            width: 100%;
+            height: 210px;
+            object-fit: cover;
+            transition: all 0.35s ease;
+        }
 
-.quiz-body {
-    padding: 24px;
-}
+        .quiz-item:hover img {
+            transform: scale(1.05);
+        }
 
-.quiz-body h3 {
-    font-size: 1.15rem;
-    font-weight: 700;
-    color: #0f172a;
-    margin-bottom: 12px;
-    line-height: 1.4;
-}
+        .quiz-body {
+            padding: 24px;
+        }
 
-.quiz-body p {
-    color: #64748b;
-    font-size: 0.95rem;
-    line-height: 1.6;
-    margin-bottom: 22px;
-    min-height: 70px;
-}
+        .quiz-body h3 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
 
-.quiz-body .btn {
-    width: 100%;
-    justify-content: center;
-    padding: 12px 18px;
-    border-radius: 14px;
-    font-weight: 600;
-    background: linear-gradient(135deg, #2563eb, #1d4ed8);
-    border: none;
-    box-shadow: 0 8px 20px rgba(37, 99, 235, 0.28);
-    transition: all 0.25s ease;
-}
+        .quiz-body p {
+            color: #64748b;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin-bottom: 22px;
+            min-height: 70px;
+        }
 
-.quiz-body .btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 12px 28px rgba(37, 99, 235, 0.38);
-}
+        .quiz-body .btn {
+            width: 100%;
+            justify-content: center;
+            padding: 12px 18px;
+            border-radius: 14px;
+            font-weight: 600;
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            border: none;
+            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.28);
+            transition: all 0.25s ease;
+        }
 
-/* ===== Pagination flèches seulement ===== */
-.pagination-front {
-    margin-top: 45px;
-    display: flex;
-    justify-content: center;
-    gap: 14px;
-}
+        .quiz-body .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 28px rgba(37, 99, 235, 0.38);
+        }
 
-.pagination-front a {
-    width: 46px;
-    height: 46px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #ffffff;
-    border: 1px solid #bfdbfe;
-    border-radius: 50%;
-    color: #2563eb;
-    text-decoration: none;
-    font-size: 0;
-    box-shadow: 0 8px 20px rgba(37, 99, 235, 0.16);
-    transition: all 0.25s ease;
-}
+        .pagination-front {
+            margin-top: 45px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 14px;
+        }
 
-.pagination-front a i {
-    font-size: 16px;
-}
+        .pagination-front a {
+            width: 46px;
+            height: 46px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #ffffff;
+            border: 1px solid #bfdbfe;
+            border-radius: 50%;
+            color: #2563eb;
+            text-decoration: none;
+            font-size: 16px;
+            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.16);
+            transition: all 0.25s ease;
+        }
 
-.pagination-front a:hover {
-    background: #2563eb;
-    color: #ffffff;
-    transform: translateY(-3px);
-    box-shadow: 0 12px 25px rgba(37, 99, 235, 0.35);
-}
+        .pagination-front a:hover,
+        .pagination-front a.active {
+            background: #2563eb;
+            color: #ffffff;
+            transform: translateY(-3px);
+            box-shadow: 0 12px 25px rgba(37, 99, 235, 0.35);
+        }
 
-.pagination-front a:not(:first-child):not(:last-child) {
-    display: none;
-}
+        .page-info {
+            padding: 10px 18px;
+            background: #ffffff;
+            border-radius: 999px;
+            color: #2563eb;
+            font-weight: 600;
+            border: 1px solid #bfdbfe;
+            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.12);
+        }
     </style>
 </head>
 <body>
@@ -206,22 +207,26 @@ $list = array_slice($list, $offset, $itemsPerPage);
                     </div>
                 <?php } ?>
             </section>
-            
+
             <?php if ($totalPages > 1) { ?>
             <div class="pagination-front">
-                <?php if ($currentPage > 1) { ?>
-                    <a href="?page=<?= $currentPage - 1 ?>"><i class="fa-solid fa-chevron-left"></i> Précédent</a>
-                <?php } ?>
 
-                <?php for ($i = 1; $i <= $totalPages; $i++) { ?>
-                    <a href="?page=<?= $i ?>" class="<?= $i == $currentPage ? 'active' : '' ?>">
-                        <?= $i ?>
+                <?php if ($currentPage > 1) { ?>
+                    <a href="front-quiz.php?page=<?= $currentPage - 1 ?>" title="Précédent">
+                        <i class="fa-solid fa-chevron-left"></i>
                     </a>
                 <?php } ?>
 
+                <span class="page-info">
+                    Page <?= $currentPage ?> / <?= $totalPages ?>
+                </span>
+
                 <?php if ($currentPage < $totalPages) { ?>
-                    <a href="?page=<?= $currentPage + 1 ?>">Suivant <i class="fa-solid fa-chevron-right"></i></a>
+                    <a href="front-quiz.php?page=<?= $currentPage + 1 ?>" title="Suivant">
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </a>
                 <?php } ?>
+
             </div>
             <?php } ?>
 

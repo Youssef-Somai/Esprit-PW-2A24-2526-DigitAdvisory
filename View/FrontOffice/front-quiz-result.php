@@ -361,6 +361,7 @@ if ($score <= 25) {
 
 <body>
 
+    <?php if ($score >= 50) { ?>
     <div class="balloon b1"></div>
     <div class="balloon b2"></div>
     <div class="balloon b3"></div>
@@ -370,6 +371,7 @@ if ($score <= 25) {
     <audio id="felicitationSound">
         <source src="../../felicitation.mp3" type="audio/mpeg">
     </audio>
+     <?php } ?>
 
     <div class="result-wrapper">
         <h2>Résultat du questionnaire</h2>
@@ -381,9 +383,10 @@ if ($score <= 25) {
         <div class="level-badge">Niveau : <?= htmlspecialchars($niveau) ?></div>
         <p><?= htmlspecialchars($message) ?></p>
 
-        <h2 class="congrats">🎉 Félicitations 🎊</h2>
-        <p class="icons-party">🏆 ⭐ 🎈 ✨ 🥳</p>
-
+          <?php if ($score >= 50) { ?>
+         <h2 class="congrats">🎉 Félicitations 🎊</h2>
+         <p class="icons-party">🏆 ⭐ 🎈 ✨ 🥳</p>
+         <?php } ?>
         <form action="send-result-email.php" method="POST" class="email-form" id="emailForm">
             <h3>Recevoir le résultat par email</h3>
 
@@ -486,21 +489,27 @@ if ($score <= 25) {
             }
         }
 
-        window.addEventListener("load", function () {
-            createExplosion();
+       
+window.addEventListener("load", function () {
 
-            setInterval(createLight, 250);
-            setInterval(createConfetti, 120);
+    const score = <?= $score ?>;
 
-            const sound = document.getElementById("felicitationSound");
+    if (score >= 50) {
+        createExplosion();
+        setInterval(createLight, 250);
+        setInterval(createConfetti, 120);
+
+        const sound = document.getElementById("felicitationSound");
+
         if (sound) {
-    document.addEventListener("click", function playSoundOnce() {
-        sound.play();
-        document.removeEventListener("click", playSoundOnce);
-    });
-}
+            setTimeout(function () {
+                sound.play().catch(function () {});
+            }, 800);
+        }
+    }
 
-        });
+});
+
 
         const emailForm = document.getElementById("emailForm");
         const emailInput = document.getElementById("emailInput");
