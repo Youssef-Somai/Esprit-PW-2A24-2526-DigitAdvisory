@@ -114,6 +114,20 @@ class CritereController
         }
     }
 
+    public function updateCritereTemplate(int $id, ?string $documentTemplate): void
+    {
+        $sql = "UPDATE critere SET document_template = :document_template WHERE id = :id";
+        $db  = config::getConnexion();
+        try {
+            $stmt = $db->prepare($sql);
+            $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+            $stmt->bindValue(':document_template', $documentTemplate);
+            $stmt->execute();
+        } catch (Exception $e) {
+            die('Erreur updateCritereTemplate: ' . $e->getMessage());
+        }
+    }
+
     // ─── DELETE : deleteCritere($id) ───
     public function deleteCritere(int $id): void
     {
@@ -126,6 +140,36 @@ class CritereController
         } catch (Exception $e) {
             die('Erreur deleteCritere: ' . $e->getMessage());
         }
+    }
+
+    // ─── HELPER : handleFileUpload() ───
+    public function handleFileUpload(): ?string
+    {
+        if (isset($_FILES['template_file']) && $_FILES['template_file']['error'] === UPLOAD_ERR_OK) {
+            $uploadDir = __DIR__ . '/../uploads/templates/';
+            $allowedExtensions = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'html'];
+            $extension = strtolower(pathinfo($_FILES['template_file']['name'], PATHINFO_EXTENSION));
+
+            if (!in_array($extension, $allowedExtensions, true)) {
+                return null;
+            }
+
+            if (!is_dir($uploadDir)) {
+                mkdir($uploadDir, 0777, true);
+            }
+
+            $fileName = basename($_FILES['template_file']['name']);
+            // Sécurisation du nom de fichier
+            $fileName = preg_replace("/[^a-zA-Z0-9\._-]/", "_", $fileName);
+            $uniqueName = time() . '_' . $fileName;
+            $targetPath = $uploadDir . $uniqueName;
+
+            if (move_uploaded_file($_FILES['template_file']['tmp_name'], $targetPath)) {
+                // On retourne le chemin relatif pour l'accès depuis le Front/Back
+                return '../../uploads/templates/' . $uniqueName;
+            }
+        }
+        return null;
     }
 }
 
@@ -146,6 +190,8 @@ if (basename($_SERVER['PHP_SELF']) === 'CritereController.php') {
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         // 1. Ajouter Critère
         if ($_POST['action'] === 'add_critere') {
+            $templatePath = $critereController->handleFileUpload();
+            
             $critere = new Critere(
                 null,
                 $_POST['nom'],
@@ -154,7 +200,7 @@ if (basename($_SERVER['PHP_SELF']) === 'CritereController.php') {
                 $_POST['moyen_preuve'] ?? null,
                 isset($_POST['est_obligatoire']) ? 1 : 0,
                 $_POST['difficulte'] ?? 'Moyen',
-                $_POST['document_template'] ?? null
+                $templatePath ?? $_POST['document_template'] ?? null
             );
             $critereController->addCritere($critere);
             header('Location: ../View/BackOffice/back-certification.php?success=add_critere&tab=criteres');
@@ -163,6 +209,8 @@ if (basename($_SERVER['PHP_SELF']) === 'CritereController.php') {
 
         // 2. Modifier Critère
         if ($_POST['action'] === 'update_critere') {
+            $templatePath = $critereController->handleFileUpload();
+            
             $critere = new Critere(
                 (int) $_POST['id'],
                 $_POST['nom'],
@@ -171,7 +219,7 @@ if (basename($_SERVER['PHP_SELF']) === 'CritereController.php') {
                 $_POST['moyen_preuve'],
                 isset($_POST['est_obligatoire']) ? 1 : 0,
                 $_POST['difficulte'],
-                $_POST['document_template']
+                $templatePath ?? $_POST['document_template'] ?? null
             );
             $critereController->updateCritere($critere);
             header('Location: ../View/BackOffice/back-certification.php?success=update_critere&tab=criteres');

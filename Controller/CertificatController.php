@@ -187,7 +187,7 @@ class CertificatController
                     $row['document_template']
                 );
                 // On injecte le poids spécifique trouvé dans la table de jointure
-                $crit->poids_specifique = (int) $row['pivot_poids'];
+                $crit->setPoidsSpecifique((int) $row['pivot_poids']);
                 $result[] = $crit;
             }
             return $result;

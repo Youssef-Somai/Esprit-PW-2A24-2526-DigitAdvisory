@@ -29,6 +29,9 @@ if (!$critere) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../../css/style.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
+    <script src="https://unpkg.com/html-docx-js/dist/html-docx.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <style>
         .sidebar { background: var(--dark); color: white; }
         .sidebar .menu-item { color: var(--gray-light); }
@@ -66,6 +69,31 @@ if (!$critere) {
 
         .update-header { border-bottom: 1px solid var(--gray-light); padding-bottom: 1rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 1rem; }
         .update-header i { font-size: 1.5rem; color: var(--primary); }
+
+        /* ─── Modal Overlay ─── */
+        .modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); z-index: 2000;
+            justify-content: center; align-items: center; animation: fadeIn 0.25s ease;
+        }
+        .modal-overlay.active { display: flex; }
+
+        .modal {
+            background: white; border-radius: var(--radius-lg); padding: 2.5rem;
+            width: 100%; max-width: 560px; box-shadow: 0 25px 50px rgba(0,0,0,0.25);
+            position: relative; animation: slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .modal h3 { font-size: 1.4rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem; }
+        .modal h3 i { color: var(--primary); }
+        .modal-close {
+            position: absolute; top: 1rem; right: 1rem; background: none; border: none; font-size: 1.3rem;
+            color: var(--gray); cursor: pointer; transition: var(--transition); width: 36px; height: 36px;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+        }
+        .modal-close:hover { background: var(--gray-light); color: var(--dark); }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        .ck-editor__editable_inline { min-height: 400px; }
     </style>
 </head>
 <body class="admin-theme">
@@ -104,7 +132,7 @@ if (!$critere) {
                         <h3 style="margin: 0; font-size: 1.25rem;">Formulaire d'Édition</h3>
                     </div>
 
-                    <form id="formUpdateCritere" method="POST" action="../../Controller/CritereController.php">
+                    <form id="formUpdateCritere" method="POST" action="../../Controller/CritereController.php" enctype="multipart/form-data">
                         <input type="hidden" name="action" value="update_critere">
                         <input type="hidden" name="id" value="<?= htmlspecialchars($critere->getId()) ?>">
                         
@@ -154,8 +182,13 @@ if (!$critere) {
                         </div>
                         
                         <div class="form-group">
-                            <label for="document_template">Lien Modèle / Template</label>
-                            <input type="text" id="document_template" name="document_template" value="<?= htmlspecialchars($critere->getDocumentTemplate() ?? '') ?>">
+                            <label for="document_template">Lien Modèle (URL) ou Nouveau Fichier</label>
+                            <input type="text" id="document_template" name="document_template" value="<?= htmlspecialchars($critere->getDocumentTemplate() ?? '') ?>" placeholder="ex: https://...">
+                            <input type="file" name="template_file" style="margin-top: 0.5rem; background: transparent; border: none; padding: 0;">
+                            <?php if ($critere->getDocumentTemplate()): ?>
+                                <small style="display:block; margin-top:0.5rem;">Fichier actuel : <a href="<?= htmlspecialchars($critere->getDocumentTemplate()) ?>" target="_blank"><?= basename($critere->getDocumentTemplate()) ?></a></small>
+                            <?php endif; ?>
+                            <small style="display:block; margin-top:0.5rem; color: var(--gray);">Vous pouvez aussi générer un modèle HTML via OpenAI après enregistrement.</small>
                         </div>
                         
                         <div class="form-actions">
@@ -163,9 +196,30 @@ if (!$critere) {
                             <button type="submit" class="btn btn-primary"><i class="fa-solid fa-save"></i> Mettre à jour</button>
                         </div>
                     </form>
+                    <div style="margin-top: 1rem; display:flex; justify-content:flex-end;">
+                        <button type="button" class="btn btn-outline" onclick="generateTemplateAjax()"><i class="fa-solid fa-wand-magic-sparkles"></i> Générer le modèle avec l'IA</button>
+                    </div>
                 </div>
             </section>
         </main>
+    </div>
+
+    <!-- ─── Modal WYSIWYG ─── -->
+    <div class="modal-overlay" id="modalWysiwyg">
+        <div class="modal" style="max-width: 800px; max-height: 90vh; overflow-y: auto;">
+            <button class="modal-close" onclick="closeModalWysiwyg()"><i class="fa-solid fa-xmark"></i></button>
+            <h3><i class="fa-solid fa-file-signature"></i> Édition du Modèle IA</h3>
+            <div id="editor-container" style="margin-bottom: 1.5rem;">
+                <textarea id="wysiwyg-editor"></textarea>
+            </div>
+            <div class="form-actions" style="justify-content: space-between;">
+                <button type="button" class="btn btn-outline" onclick="downloadDocx()" style="border-color:#2b579a; color:#2b579a;"><i class="fa-solid fa-file-word"></i> Télécharger en DOCX</button>
+                <div style="display:flex; gap:0.75rem;">
+                    <button type="button" class="btn btn-cancel" onclick="closeModalWysiwyg()">Annuler</button>
+                    <button type="button" class="btn btn-primary" onclick="saveTemplateAjax()"><i class="fa-solid fa-save"></i> Sauvegarder sur le serveur</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -196,6 +250,95 @@ if (!$critere) {
                 Swal.fire({ icon: 'error', title: 'Erreur', text: 'Veuillez corriger les erreurs dans le formulaire.', backdrop: `rgba(15, 23, 42, 0.6)` });
             }
         });
+
+        // ─── WYSIWYG & AJAX GENERATION ───
+        let editorInstance;
+        let currentCritereId = <?= htmlspecialchars($critere->getId()) ?>;
+
+        ClassicEditor
+            .create(document.querySelector('#wysiwyg-editor'))
+            .then(editor => { editorInstance = editor; })
+            .catch(error => { console.error(error); });
+
+        function generateTemplateAjax() {
+            Swal.fire({
+                title: 'Génération en cours...',
+                html: 'L\'IA rédige le modèle ISO, veuillez patienter (environ 15-30s).',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading(); }
+            });
+
+            const formData = new FormData();
+            formData.append('action', 'ajax_generate_template');
+            formData.append('id', currentCritereId);
+
+            fetch('../../Controller/GenerateTemplateController.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                Swal.close();
+                if (data.success) {
+                    editorInstance.setData(data.html);
+                    document.getElementById('modalWysiwyg').classList.add('active');
+                } else {
+                    Swal.fire('Erreur', data.message, 'error');
+                }
+            })
+            .catch(err => {
+                Swal.close();
+                Swal.fire('Erreur', 'Erreur réseau lors de la génération.', 'error');
+            });
+        }
+
+        function closeModalWysiwyg() {
+            document.getElementById('modalWysiwyg').classList.remove('active');
+        }
+
+        function downloadDocx() {
+            const htmlContent = editorInstance.getData();
+            const fullHtml = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Modele ISO</title></head><body>${htmlContent}</body></html>`;
+            const converted = htmlDocx.asBlob(fullHtml);
+            saveAs(converted, 'Modele_ISO_Critere_' + currentCritereId + '.docx');
+        }
+
+        function saveTemplateAjax() {
+            Swal.fire({
+                title: 'Sauvegarde...',
+                html: 'Enregistrement du document DOCX sur le serveur.',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading(); }
+            });
+
+            const htmlContent = editorInstance.getData();
+            const fullHtml = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Modele ISO</title></head><body>${htmlContent}</body></html>`;
+            const convertedBlob = htmlDocx.asBlob(fullHtml);
+
+            const formData = new FormData();
+            formData.append('action', 'ajax_save_template');
+            formData.append('id', currentCritereId);
+            formData.append('template_file', convertedBlob, 'modele.docx');
+
+            fetch('../../Controller/GenerateTemplateController.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire('Succès', data.message, 'success').then(() => {
+                        closeModalWysiwyg();
+                        window.location.reload(); // Pour rafraichir le lien du fichier actuel
+                    });
+                } else {
+                    Swal.fire('Erreur', data.message, 'error');
+                }
+            })
+            .catch(err => {
+                Swal.fire('Erreur', 'Erreur lors de la sauvegarde.', 'error');
+            });
+        }
     </script>
 </body>
 </html>

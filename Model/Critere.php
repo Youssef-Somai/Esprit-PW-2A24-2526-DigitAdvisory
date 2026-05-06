@@ -15,7 +15,7 @@ class Critere
     private ?string $document_template;
     
     // Propriété additionnelle hydratée SEULEMENT lors de la liaison Many-to-Many
-    public ?int $poids_specifique;
+    private ?int $poids_specifique;
 
     // ─── Constructeur paramétré ───
     public function __construct(
@@ -48,8 +48,11 @@ class Critere
     public function getEstObligatoire():   int     { return $this->est_obligatoire; }
     public function getDifficulte():       string  { return $this->difficulte; }
     public function getDocumentTemplate(): ?string { return $this->document_template; }
+    public function getPoidsSpecifique(): ?int { return $this->poids_specifique; }
 
     // ─── Setters ───
+
+
     public function setId(?int $id):                    void { $this->id                = $id; }
     public function setNom(string $nom):                 void { $this->nom               = $nom; }
     public function setCategorie(string $categorie):     void { $this->categorie         = $categorie; }
@@ -58,6 +61,7 @@ class Critere
     public function setEstObligatoire(int $ob):          void { $this->est_obligatoire   = $ob; }
     public function setDifficulte(string $diff):         void { $this->difficulte        = $diff; }
     public function setDocumentTemplate(?string $tpl):   void { $this->document_template = $tpl; }
+    public function setPoidsSpecifique(?int $p):          void { $this->poids_specifique  = $p; }
 
     // ─── Méthode show() ───
     public function show(): string

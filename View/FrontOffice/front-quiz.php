@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
@@ -55,7 +55,7 @@
                     <i class="fa-solid fa-clipboard-question" style="font-size: 3.5rem; color: var(--primary); margin-bottom: 1.5rem;"></i>
                     <h3 class="mb-1" style="font-size: 1.5rem;">Quiz de Maturité Numérique</h3>
                     <p style="color: var(--gray); margin-bottom: 2rem; max-width: 500px; margin-left: auto; margin-right: auto;">Ce questionnaire de 15 questions analyse vos processus internes afin de recommander les certifications ISO les plus adaptées et d'optimiser le matching avec les experts.</p>
-                    <button class="btn btn-primary pulse-glow" style="font-size: 1.1rem; padding: 1rem 2rem;">Démarrer le Quiz <i class="fa-solid fa-arrow-right"></i></button>
+                    <button class="btn btn-primary pulse-glow" style="font-size: 1.1rem; padding: 1rem 2rem;" onclick="window.location.href='front-certification.php'">Aller au Diagnostic IA <i class="fa-solid fa-arrow-right"></i></button>
                 </div>
             </section>
         </main>

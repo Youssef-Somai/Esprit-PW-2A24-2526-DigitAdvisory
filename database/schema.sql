@@ -1,8 +1,8 @@
 -- ─── SCRIPT DE CREATION DE LA BASE DE DONNEES DIGITADVISORY ───
 -- (À exécuter dans phpMyAdmin)
 
-CREATE DATABASE IF NOT EXISTS digitadvisory_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE digitadvisory_db;
+CREATE DATABASE IF NOT EXISTS digitadvisory CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE digitadvisory;
 
 -- 2. Table Certificat (Mise à jour V2 Pro)
 CREATE TABLE IF NOT EXISTS certificat (
