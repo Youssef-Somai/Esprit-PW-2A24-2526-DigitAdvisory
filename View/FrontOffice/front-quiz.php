@@ -9,7 +9,7 @@ $quizzes = $query->fetchAll(PDO::FETCH_ASSOC);
 
 $list = $quizzes;
 
-$itemsPerPage = 3;
+$itemsPerPage = 6;
 $currentPage = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 
 if ($currentPage < 1) {
@@ -186,7 +186,6 @@ $list = array_slice($list, $offset, $itemsPerPage);
             <a href="login.php" style="margin-left: auto; color: var(--danger);"><i class="fa-solid fa-arrow-right-from-bracket"></i></a>
         </div>
     </aside>
-
     <main class="main-content">
         <div class="top-navbar">
             <h2 style="margin: 0; font-size: 1.5rem;">Questionnaires disponibles</h2>
@@ -241,3 +240,5 @@ $list = array_slice($list, $offset, $itemsPerPage);
 </div>
 </body>
 </html>
+</html>
+

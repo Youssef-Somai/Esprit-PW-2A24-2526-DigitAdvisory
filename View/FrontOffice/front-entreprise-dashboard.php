@@ -1,4 +1,15 @@
-﻿<!DOCTYPE html>
+<?php
+session_start();
+if (empty($_SESSION['user']['id_user'])) {
+    header('Location: login.php');
+    exit;
+}
+if (strtolower($_SESSION['user']['role'] ?? '') === 'expert') {
+    header('Location: front-expert-dashboard.php');
+    exit;
+}
+?>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
@@ -49,7 +60,7 @@
             <div class="user-profile-widget">
                 <div class="user-avatar">TC</div>
                 <div><h4 style="font-size: 0.95rem; margin-bottom: 0.2rem;">TechCorp SAS</h4><span style="font-size: 0.8rem; color: var(--gray);">Compte Entreprise</span></div>
-                <a href="login.php" style="margin-left: auto; color: var(--danger);"><i class="fa-solid fa-arrow-right-from-bracket"></i></a>
+                <a href="login.php#register" style="margin-left: auto; color: var(--danger);"><i class="fa-solid fa-arrow-right-from-bracket"></i></a>
             </div>
         </aside>
 
@@ -59,7 +70,10 @@
                     <h2 style="margin: 0; font-size: 1.8rem; color: var(--dark);">Bonjour, TechCorp <span style="font-size:1.5rem;">👋</span></h2>
                     <p style="color:var(--gray); font-size:0.9rem;">Voici le résumé de vos activités sur Digit Advisory.</p>
                 </div>
-                <button class="btn btn-primary pulse-glow"><i class="fa-solid fa-plus"></i> Créer une Offre</button>
+                <div style="display: flex; gap: 1rem;">
+                    <a href="setup_face_id.php" class="btn btn-secondary" style="color: var(--secondary); border: 1px solid var(--secondary); background: white; text-decoration: none; display: flex; align-items: center; gap: 0.5rem;"><i class="fa-solid fa-face-smile"></i> Configurer Face ID</a>
+                    <button class="btn btn-primary pulse-glow"><i class="fa-solid fa-plus"></i> Créer une Offre</button>
+                </div>
             </div>
 
             <section class="fade-in-up delay-1">
@@ -91,3 +105,4 @@
     </div>
 </body>
 </html>
+
