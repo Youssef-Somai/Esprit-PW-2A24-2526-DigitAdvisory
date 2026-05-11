@@ -7,8 +7,7 @@ session_start();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Connexion Face ID | Digit Advisory</title>
-    <!-- Add face-api.js -->
-    <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+    <script src="../../face-api.js-master/dist/face-api.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../../css/style.css">
@@ -80,15 +79,15 @@ session_start();
         <h2><i class="fa-solid fa-face-viewfinder"></i> Connexion avec Face ID</h2>
         <p>Scannez votre visage pour vous connecter.</p>
 
-        <div id="status">Chargement des modèles AI, veuillez patienter...</div>
-        
+        <div id="status">Chargement des modeles Face ID, veuillez patienter...</div>
+
         <div id="video-container">
-            <video id="video" autoplay muted></video>
+            <video id="video" autoplay muted playsinline></video>
         </div>
 
         <button id="scan-btn" class="btn" disabled>S'authentifier</button>
         <br><br>
-        <a href="login.php" style="color: var(--gray); text-decoration: none;">Retour à la connexion classique</a>
+        <a href="login.php" style="color: var(--gray); text-decoration: none;">Retour a la connexion classique</a>
     </div>
 </div>
 
@@ -97,70 +96,97 @@ session_start();
     const container = document.getElementById('video-container');
     const status = document.getElementById('status');
     const scanBtn = document.getElementById('scan-btn');
+    const modelPath = '../../face-api.js-master/weights';
+    const tinyFaceOptions = new faceapi.TinyFaceDetectorOptions({
+        inputSize: 320,
+        scoreThreshold: 0.5
+    });
+    let mediaStream = null;
 
     Promise.all([
-        faceapi.nets.ssdMobilenetv1.loadFromUri('/Esprit-PW-2A24-2526-DigitAdvisory/models/weights'),
-        faceapi.nets.faceLandmark68Net.loadFromUri('/Esprit-PW-2A24-2526-DigitAdvisory/models/weights'),
-        faceapi.nets.faceRecognitionNet.loadFromUri('/Esprit-PW-2A24-2526-DigitAdvisory/models/weights')
+        faceapi.nets.tinyFaceDetector.loadFromUri(modelPath),
+        faceapi.nets.faceLandmark68TinyNet.loadFromUri(modelPath),
+        faceapi.nets.faceRecognitionNet.loadFromUri(modelPath)
     ]).then(startVideo).catch(err => {
         console.error(err);
-        status.textContent = "Erreur lors du chargement des modèles Face API.";
+        status.textContent = "Erreur lors du chargement des modeles Face ID.";
     });
 
     function startVideo() {
-        status.textContent = "Accès à la caméra...";
-        navigator.mediaDevices.getUserMedia(
-            { video: {} }
-        ).then(stream => {
+        status.textContent = "Acces a la camera...";
+        navigator.mediaDevices.getUserMedia({
+            video: {
+                facingMode: 'user',
+                width: { ideal: 640 },
+                height: { ideal: 480 }
+            },
+            audio: false
+        }).then(stream => {
+            mediaStream = stream;
             video.srcObject = stream;
             container.style.display = 'block';
-            status.textContent = "Veuillez regarder la caméra et cliquer sur s'authentifier.";
+            status.textContent = "Veuillez regarder la camera et cliquer sur s'authentifier.";
             scanBtn.disabled = false;
         }).catch(err => {
             console.error(err);
-            status.textContent = "Impossible d'accéder à la caméra.";
+            status.textContent = "Impossible d'acceder a la camera.";
         });
+    }
+
+    function stopVideo() {
+        if (!mediaStream) {
+            return;
+        }
+
+        mediaStream.getTracks().forEach(track => track.stop());
+        mediaStream = null;
     }
 
     scanBtn.addEventListener('click', async () => {
         status.textContent = "Analyse du visage en cours...";
         scanBtn.disabled = true;
 
-        const detections = await faceapi.detectSingleFace(video).withFaceLandmarks().withFaceDescriptor();
+        try {
+            const detection = await faceapi
+                .detectSingleFace(video, tinyFaceOptions)
+                .withFaceLandmarks(true)
+                .withFaceDescriptor();
 
-        if (!detections) {
-            status.textContent = "Aucun visage détecté. Veuillez réessayer.";
-            scanBtn.disabled = false;
-            return;
-        }
+            if (!detection) {
+                status.textContent = "Aucun visage detecte. Veuillez reessayer.";
+                scanBtn.disabled = false;
+                return;
+            }
 
-        status.textContent = "Visage détecté ! Vérification de l'identité...";
+            status.textContent = "Visage detecte. Verification de l'identite...";
 
-        const descriptor = Array.from(detections.descriptor);
+            const descriptor = Array.from(detection.descriptor);
+            const response = await fetch('../traitement/loginFaceIdTraitement.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ descriptor: descriptor })
+            });
+            const data = await response.json();
 
-        fetch('../traitement/loginFaceIdTraitement.php', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ descriptor: descriptor })
-        })
-        .then(res => res.json())
-        .then(data => {
             if (data.success) {
-                status.innerHTML = `<span style='color: green;'>Authentification réussie, bienvenue ${data.nom} !</span>`;
+                stopVideo();
+                status.innerHTML = `<span style='color: green;'>Authentification reussie, bienvenue ${data.nom} !</span>`;
                 setTimeout(() => {
                     window.location.href = data.redirect;
                 }, 1500);
-            } else {
-                status.textContent = "Erreur : " + data.message;
-                scanBtn.disabled = false;
+                return;
             }
-        })
-        .catch(err => {
+
+            status.textContent = "Erreur : " + data.message;
+            scanBtn.disabled = false;
+        } catch (err) {
             console.error(err);
             status.textContent = "Erreur serveur.";
             scanBtn.disabled = false;
-        });
+        }
     });
+
+    window.addEventListener('beforeunload', stopVideo);
 </script>
 </body>
 </html>

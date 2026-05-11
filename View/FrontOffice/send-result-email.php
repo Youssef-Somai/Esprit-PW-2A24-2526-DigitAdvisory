@@ -36,14 +36,14 @@ try {
     $mail->Host = 'smtp.gmail.com';
     $mail->SMTPAuth = true;
 
-    $mail->Username = '';
-    $mail->Password = '';
+    $mail->Username = 'ranimbenothmen0@gmail.com';
+    $mail->Password = 'cccv edtn lcpr tktc';
 
     $mail->SMTPSecure = 'tls';
     $mail->Port = 587;
     $mail->CharSet = 'UTF-8';
 
-    $mail->setFrom('', 'DigitAdvisory Quiz');
+    $mail->setFrom('ranimbenothmen0@gmail.com', 'DigitAdvisory Quiz');
     $mail->addAddress($email);
 
     $mail->isHTML(true);

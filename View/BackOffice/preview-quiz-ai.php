@@ -1,6 +1,11 @@
 <?php
 session_start();
 
+require_once __DIR__ . '/../../config.php';
+if (file_exists(__DIR__ . '/../../config.local.php')) {
+    require_once __DIR__ . '/../../config.local.php';
+}
+
 
 if (
     !isset($_POST['titre']) ||
@@ -68,8 +73,13 @@ Format JSON exact :
 }
 ";
 
+$apiKey = defined('GEMINI_API_KEY') ? GEMINI_API_KEY : null;
 
-$url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent";
+if ($apiKey === null) {
+    die("Cle API Gemini manquante dans config.local.php.");
+}
+
+$url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=" . urlencode($apiKey);
 
 
 $payload = [
@@ -90,8 +100,7 @@ $ch = curl_init($url);
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 curl_setopt($ch, CURLOPT_POST, true);
 curl_setopt($ch, CURLOPT_HTTPHEADER, [
-    "Content-Type: application/json",
-    "X-goog-api-key: " . $apiKey
+    "Content-Type: application/json"
 ]);
 curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
 
