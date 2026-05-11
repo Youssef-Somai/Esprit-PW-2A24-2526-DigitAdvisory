@@ -14,6 +14,7 @@ if (!$session && !in_array($action, $adminOnlyActions, true)) {
 }
 
 $ctrl   = new MessageController();
+$ctrl->ensureTablesExist(); // auto-create message_reaction + user_status if missing
 $userId = $session ? (int)$session['id_user'] : 0;
 $role   = $session['role'] ?? '';
 
