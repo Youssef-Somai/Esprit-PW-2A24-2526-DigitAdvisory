@@ -190,7 +190,12 @@ class MessageController
                 'SELECT emoji, COUNT(*) AS cnt, MAX(id_user=:uid) AS reacted_by_me
                  FROM message_reaction WHERE id_message=:id GROUP BY emoji');
             $st->execute(['id'=>$msgId,'uid'=>$myUserId]);
-            return $st->fetchAll();
+            $rows = $st->fetchAll();
+            foreach ($rows as &$row) {
+                $row['cnt']           = (int)$row['cnt'];
+                $row['reacted_by_me'] = (bool)(int)$row['reacted_by_me'];
+            }
+            return $rows;
         } catch (Exception $e) { return []; }
     }
 
@@ -239,7 +244,7 @@ class MessageController
             $s = $st2->fetch();
             if (!$s) return ['other_online'=>false,'other_typing'=>false,'other_name'=>$otherName];
             $online  = (time() - strtotime($s['last_seen'])) < 120;
-            $typing  = $s['typing_in']==$convId && $s['typing_at'] && (time()-strtotime($s['typing_at']))<5;
+            $typing  = $s['typing_in']==$convId && $s['typing_at'] && (time()-strtotime($s['typing_at']))<10;
             return ['other_online'=>$online,'other_typing'=>(bool)$typing,'other_name'=>$otherName];
         } catch (Exception $e) { return ['other_online'=>false,'other_typing'=>false,'other_name'=>'']; }
     }

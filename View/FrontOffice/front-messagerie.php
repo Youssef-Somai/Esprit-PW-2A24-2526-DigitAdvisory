@@ -256,7 +256,7 @@ let allConvs=[], allUsers=[];
 let mediaRecorder=null, audioChunks=[], recInterval=null, recSeconds=0;
 let activeMsgId=null; // for emoji picker
 let typingDebounce=null;
-let renderHash='', loadingMessages=false;
+let renderHash='';
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
@@ -307,7 +307,6 @@ function filterConvs(q) {
 function openConv(id, name, initials, role, otherId) {
     currentConvId=id;
     renderHash='';
-    loadingMessages=false;
     document.querySelectorAll('.conv-item').forEach(el=>el.classList.toggle('active',el.dataset.id==id));
     document.getElementById('chatEmpty').style.display='none';
     const zone=document.getElementById('chatZone');
@@ -331,16 +330,13 @@ function openConv(id, name, initials, role, otherId) {
 
 // ─── Messages ─────────────────────────────────────────────────────────────────
 function loadMessages(id) {
-    if(loadingMessages) return;
-    loadingMessages=true;
     fetch(API+'?action=get_messages&id_conversation='+id)
         .then(r=>r.json())
         .then(data => {
-            loadingMessages=false;
             if(data.error) return;
             renderMessages(data.messages||[]);
             updateStatus(data.other_online, data.other_typing, data.other_name);
-        }).catch(()=>{loadingMessages=false;});
+        }).catch(()=>{});
 }
 
 function renderMessages(msgs) {

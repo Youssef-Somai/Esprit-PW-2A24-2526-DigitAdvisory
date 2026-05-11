@@ -241,7 +241,7 @@ let currentConvId=null, pollingTimer=null;
 let allConvs=[], allUsers=[];
 let mediaRecorder=null, audioChunks=[], recInterval=null, recSeconds=0;
 let activeMsgId=null, typingDebounce=null;
-let renderHash='', loadingMessages=false;
+let renderHash='';
 
 document.addEventListener('DOMContentLoaded', () => {
     loadConvs();
@@ -273,7 +273,6 @@ function filterConvs(q){q=q.toLowerCase();renderConvs(allConvs.filter(c=>c.other
 function openConv(id,name,initials,role,otherId) {
     currentConvId=id;
     renderHash='';
-    loadingMessages=false;
     document.querySelectorAll('.conv-item').forEach(el=>el.classList.toggle('active',el.dataset.id==id));
     document.getElementById('chatEmpty').style.display='none';
     document.getElementById('chatZone').style.display='flex';
@@ -292,14 +291,11 @@ function openConv(id,name,initials,role,otherId) {
 }
 
 function loadMessages(id) {
-    if(loadingMessages) return;
-    loadingMessages=true;
     fetch(API+'?action=get_messages&id_conversation='+id).then(r=>r.json()).then(data=>{
-        loadingMessages=false;
         if(data.error) return;
         renderMessages(data.messages||[]);
         updateStatus(data.other_online,data.other_typing,data.other_name);
-    }).catch(()=>{loadingMessages=false;});
+    }).catch(()=>{});
 }
 
 function renderMessages(msgs) {
