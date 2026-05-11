@@ -626,7 +626,11 @@ function pickEmoji(emoji) {
 function toggleReaction(msgId, emoji) {
     const fd=new FormData();
     fd.append('action','toggle_reaction');fd.append('id_message',msgId);fd.append('emoji',emoji);
-    fetch(API,{method:'POST',body:fd}).then(r=>r.json()).then(()=>loadMessages(currentConvId));
+    fetch(API,{method:'POST',body:fd}).then(r=>r.json()).then(d=>{
+        console.log('[reaction]',d);
+        renderHash='';
+        loadMessages(currentConvId);
+    });
 }
 
 // ─── Polling ──────────────────────────────────────────────────────────────────

@@ -150,6 +150,7 @@ switch ($action) {
         $emoji = trim($_POST['emoji'] ?? '');
         if (!$msgId||$emoji==='') { echo json_encode(['error'=>'Données manquantes']); break; }
         $result = $ctrl->toggleReaction($msgId,$userId,$emoji);
+        if (isset($result['error'])) { echo json_encode(['success'=>false,'error'=>$result['error']]); break; }
         echo json_encode(array_merge(['success'=>true],$result)); break;
 
     case 'update_typing':

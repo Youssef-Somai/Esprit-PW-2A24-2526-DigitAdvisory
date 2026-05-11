@@ -468,7 +468,15 @@ function backToList(){document.querySelector('.chat-wrap').classList.remove('in-
 function showEmojiPicker(e,msgId){e.stopPropagation();activeMsgId=msgId;const picker=document.getElementById('emojiPicker');picker.classList.add('open');const x=Math.min(e.clientX,window.innerWidth-230),y=e.clientY+8+230>window.innerHeight?e.clientY-240:e.clientY+8;picker.style.left=x+'px';picker.style.top=y+'px';}
 function closeEmojiPicker(){document.getElementById('emojiPicker').classList.remove('open');activeMsgId=null;}
 function pickEmoji(emoji){if(!activeMsgId||!currentConvId)return;closeEmojiPicker();toggleReaction(activeMsgId,emoji);}
-function toggleReaction(msgId,emoji){const fd=new FormData();fd.append('action','toggle_reaction');fd.append('id_message',msgId);fd.append('emoji',emoji);fetch(API,{method:'POST',body:fd}).then(r=>r.json()).then(()=>loadMessages(currentConvId));}
+function toggleReaction(msgId,emoji){
+    const fd=new FormData();
+    fd.append('action','toggle_reaction');fd.append('id_message',msgId);fd.append('emoji',emoji);
+    fetch(API,{method:'POST',body:fd}).then(r=>r.json()).then(d=>{
+        console.log('[reaction]',d);
+        renderHash='';
+        loadMessages(currentConvId);
+    });
+}
 
 function startPolling(id){stopPolling();pollingTimer=setInterval(()=>{if(currentConvId===id){loadMessages(id);loadConvs();}},3000);}
 function stopPolling(){if(pollingTimer)clearInterval(pollingTimer);pollingTimer=null;}
