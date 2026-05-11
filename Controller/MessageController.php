@@ -9,27 +9,27 @@ class MessageController
     {
         try {
             $db = config::getConnexion();
+            // No foreign keys — avoids silent failures on some MySQL configs
             $db->exec("CREATE TABLE IF NOT EXISTS `message_reaction` (
                 `id_reaction` INT(11) NOT NULL AUTO_INCREMENT,
                 `id_message`  INT(11) NOT NULL,
                 `id_user`     INT(11) NOT NULL,
                 `emoji`       VARCHAR(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-                `created_at`  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                `created_at`  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
                 PRIMARY KEY (`id_reaction`),
-                UNIQUE KEY `unique_reaction` (`id_message`,`id_user`,`emoji`),
-                FOREIGN KEY (`id_message`) REFERENCES `message`(`id_message`) ON DELETE CASCADE,
-                FOREIGN KEY (`id_user`)    REFERENCES `user`(`id_user`)    ON DELETE CASCADE
+                UNIQUE KEY `unique_reaction` (`id_message`,`id_user`,`emoji`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 
             $db->exec("CREATE TABLE IF NOT EXISTS `user_status` (
                 `id_user`   INT(11) NOT NULL,
-                `last_seen` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                `last_seen` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
                 `typing_in` INT(11) DEFAULT NULL,
-                `typing_at` TIMESTAMP NULL DEFAULT NULL,
-                PRIMARY KEY (`id_user`),
-                FOREIGN KEY (`id_user`) REFERENCES `user`(`id_user`) ON DELETE CASCADE
+                `typing_at` DATETIME NULL DEFAULT NULL,
+                PRIMARY KEY (`id_user`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
-        } catch (Exception $e) {}
+        } catch (Exception $e) {
+            error_log('[MessageController] ensureTablesExist: '.$e->getMessage());
+        }
     }
 
     // ─── Helpers ────────────────────────────────────────────────────────────
@@ -267,13 +267,22 @@ class MessageController
             $otherId   = ($conv['id_user1']==$myUserId) ? $conv['id_user2'] : $conv['id_user1'];
             $other     = $this->getUserById($otherId);
             $otherName = $other ? $this->getDisplayName($other) : 'Utilisateur';
-            $st2 = $db->prepare('SELECT * FROM user_status WHERE id_user=:uid');
-            $st2->execute(['uid'=>$otherId]);
+            // All time comparisons done in MySQL to avoid PHP/MySQL timezone mismatch
+            $st2 = $db->prepare(
+                'SELECT
+                    (TIMESTAMPDIFF(SECOND, last_seen, NOW())) < 30  AS is_online,
+                    (typing_in = :conv
+                     AND typing_at IS NOT NULL
+                     AND (TIMESTAMPDIFF(SECOND, typing_at, NOW())) < 10) AS is_typing
+                 FROM user_status WHERE id_user=:uid');
+            $st2->execute(['uid'=>$otherId,'conv'=>$convId]);
             $s = $st2->fetch();
             if (!$s) return ['other_online'=>false,'other_typing'=>false,'other_name'=>$otherName];
-            $online  = (time() - strtotime($s['last_seen'])) < 30;
-            $typing  = $s['typing_in']==$convId && $s['typing_at'] && (time()-strtotime($s['typing_at']))<10;
-            return ['other_online'=>$online,'other_typing'=>(bool)$typing,'other_name'=>$otherName];
+            return [
+                'other_online'  => (bool)(int)$s['is_online'],
+                'other_typing'  => (bool)(int)$s['is_typing'],
+                'other_name'    => $otherName,
+            ];
         } catch (Exception $e) { return ['other_online'=>false,'other_typing'=>false,'other_name'=>'']; }
     }
 

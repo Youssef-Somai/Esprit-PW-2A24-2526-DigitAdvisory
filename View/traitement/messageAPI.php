@@ -186,6 +186,23 @@ switch ($action) {
         $convId = (int)($_POST['id_conversation'] ?? 0);
         echo json_encode(['success'=>$ctrl->adminDeleteConversation($convId)]); break;
 
+    case 'debug_status':
+        try {
+            $db = config::getConnexion();
+            $tables = $db->query("SHOW TABLES LIKE 'user_status'")->fetch();
+            $reacts = $db->query("SHOW TABLES LIKE 'message_reaction'")->fetch();
+            $rows   = $tables ? $db->query("SELECT id_user, last_seen, typing_in, TIMESTAMPDIFF(SECOND,last_seen,NOW()) AS seconds_ago FROM user_status")->fetchAll() : [];
+            echo json_encode([
+                'user_status_table_exists'    => (bool)$tables,
+                'message_reaction_table_exists'=> (bool)$reacts,
+                'user_status_rows'            => $rows,
+                'mysql_now'                   => $db->query("SELECT NOW() AS n")->fetch()['n'],
+                'php_time'                    => date('Y-m-d H:i:s'),
+                'current_user_id'             => $userId,
+            ]);
+        } catch (Exception $e) { echo json_encode(['error'=>$e->getMessage()]); }
+        break;
+
     default:
         echo json_encode(['error'=>'Action inconnue: '.htmlspecialchars($action)]);
 }
