@@ -75,7 +75,12 @@ $apiUrl = '../traitement/messageAPI.php';
         .msg-wrapper{display:flex;flex-direction:column;position:relative}
         .msg-wrapper.sent{align-items:flex-end}
         .msg-wrapper.received{align-items:flex-start}
-        .msg-bubble{max-width:65%;padding:.65rem .9rem;border-radius:16px;font-size:.9rem;line-height:1.5;word-break:break-word}
+        .msg-bubble-wrap{position:relative;max-width:65%}
+        .msg-bubble-wrap.has-reactions{margin-bottom:16px}
+        .reactions-overlay{position:absolute;bottom:-14px;display:flex;gap:3px;z-index:2}
+        .msg-wrapper.sent .reactions-overlay{right:4px}
+        .msg-wrapper.received .reactions-overlay{left:4px}
+        .msg-bubble{max-width:100%;padding:.65rem .9rem;border-radius:16px;font-size:.9rem;line-height:1.5;word-break:break-word}
         .msg-wrapper.received .msg-bubble{background:white;box-shadow:var(--shadow-sm);border-bottom-left-radius:4px}
         .msg-wrapper.sent .msg-bubble{background:var(--secondary);color:white;border-bottom-right-radius:4px}
         .msg-deleted{font-style:italic;opacity:.55}
@@ -90,12 +95,10 @@ $apiUrl = '../traitement/messageAPI.php';
         .msg-btn.react-btn:hover{color:var(--accent);border-color:var(--accent)}
         .msg-edit-input{width:100%;padding:.4rem .65rem;border:1px solid var(--secondary);border-radius:8px;font-size:.88rem;font-family:var(--font-main);outline:none;margin-top:.3rem}
 
-        .reactions-bar{display:flex;flex-wrap:wrap;gap:.3rem;margin-top:.3rem}
-        .reaction-pill{background:white;border:1px solid var(--gray-light);border-radius:999px;padding:.15rem .5rem;font-size:.82rem;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:.2rem;line-height:1.4}
-        .reaction-pill:hover{border-color:var(--secondary);background:#f0f9ff}
+        /* Reactions overlay — WhatsApp style */
+        .reaction-pill{background:white;border:1px solid var(--gray-light);border-radius:999px;padding:2px 6px;font-size:12px;box-shadow:0 1px 4px rgba(0,0,0,.1);cursor:pointer;transition:transform .15s;display:flex;align-items:center;gap:2px;line-height:1.4}
+        .reaction-pill:hover{transform:scale(1.15)}
         .reaction-pill.reacted{background:#e0f2fe;border-color:var(--secondary)}
-        .msg-wrapper.sent .reaction-pill{background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.4);color:white}
-        .msg-wrapper.sent .reaction-pill.reacted{background:rgba(255,255,255,.4)}
 
         .msg-file{display:flex;align-items:center;gap:.6rem;padding:.5rem .75rem;background:rgba(255,255,255,.15);border-radius:8px;margin-top:.3rem;text-decoration:none;color:inherit;font-size:.85rem}
         .msg-wrapper.received .msg-file{background:#f1f5f9;color:var(--dark)}
@@ -238,6 +241,7 @@ let currentConvId=null, pollingTimer=null;
 let allConvs=[], allUsers=[];
 let mediaRecorder=null, audioChunks=[], recInterval=null, recSeconds=0;
 let activeMsgId=null, typingDebounce=null;
+let renderHash='', loadingMessages=false;
 
 document.addEventListener('DOMContentLoaded', () => {
     loadConvs();
@@ -268,6 +272,8 @@ function filterConvs(q){q=q.toLowerCase();renderConvs(allConvs.filter(c=>c.other
 
 function openConv(id,name,initials,role,otherId) {
     currentConvId=id;
+    renderHash='';
+    loadingMessages=false;
     document.querySelectorAll('.conv-item').forEach(el=>el.classList.toggle('active',el.dataset.id==id));
     document.getElementById('chatEmpty').style.display='none';
     document.getElementById('chatZone').style.display='flex';
@@ -286,15 +292,21 @@ function openConv(id,name,initials,role,otherId) {
 }
 
 function loadMessages(id) {
+    if(loadingMessages) return;
+    loadingMessages=true;
     fetch(API+'?action=get_messages&id_conversation='+id).then(r=>r.json()).then(data=>{
+        loadingMessages=false;
         if(data.error) return;
         renderMessages(data.messages||[]);
         updateStatus(data.other_online,data.other_typing,data.other_name);
-    });
+    }).catch(()=>{loadingMessages=false;});
 }
 
 function renderMessages(msgs) {
     const box=document.getElementById('chatMessages');
+    const hash=msgs.map(m=>m.id_message+'_'+m.is_edited+'_'+m.is_deleted+'_'+(m.reactions?m.reactions.length:0)).join('|');
+    if(hash===renderHash&&box.children.length>0) return;
+    renderHash=hash;
     const atBottom=box.scrollHeight-box.scrollTop-box.clientHeight<80;
     if(!msgs.length){box.innerHTML='<div style="text-align:center;color:var(--gray);padding:2rem;font-size:.9rem;">Aucun message. Dites bonjour ! 👋</div>';return;}
     box.innerHTML=msgs.map(m=>buildMsg(m)).join('');
@@ -302,7 +314,7 @@ function renderMessages(msgs) {
 }
 
 function buildMsg(m) {
-    const isMine=m.id_sender==MY_ID, side=isMine?'sent':'received';
+    const isMine=Number(m.id_sender)===MY_ID, side=isMine?'sent':'received';
     const edited=m.is_edited?'<i class="fa-solid fa-pen" style="font-size:.6rem;" title="Modifié"></i>':'';
     let body='';
     if(m.is_deleted) body='<span class="msg-deleted"><i class="fa-solid fa-ban"></i> Message supprimé</span>';
@@ -313,18 +325,20 @@ function buildMsg(m) {
         if(isImg) body=`<img class="msg-img" src="../../${m.file_path}" alt="${esc(m.file_name)}" onclick="previewImg('../../${m.file_path}')">`;
         else body=`<a class="msg-file" href="../../${m.file_path}" target="_blank" download="${esc(m.file_name)}"><i class="${fileIcon(m.file_name)}"></i><span>${esc(m.file_name)}${m.file_size?' ('+fmtSize(m.file_size)+')':''}</span></a>`;
     }
-    let reactBar='';
-    if(!m.is_deleted&&m.reactions&&m.reactions.length)
-        reactBar='<div class="reactions-bar">'+m.reactions.map(r=>`<span class="reaction-pill${r.reacted_by_me?' reacted':''}" onclick="toggleReaction(${m.id_message},'${r.emoji}')">${r.emoji} ${r.cnt}</span>`).join('')+'</div>';
+    // Reactions overlay — WhatsApp style (overlaps bubble corner)
+    const hasReactions=!m.is_deleted&&m.reactions&&m.reactions.length>0;
+    const reactOverlay=hasReactions?`<div class="reactions-overlay">${m.reactions.map(r=>`<span class="reaction-pill${r.reacted_by_me?' reacted':''}" onclick="toggleReaction(${m.id_message},'${r.emoji}')">${r.emoji} ${r.cnt}</span>`).join('')}</div>`:'';
     const actions=(!m.is_deleted)?`<div class="msg-actions">
         ${isMine&&m.type==='text'?`<button class="msg-btn" onclick="startEdit(${m.id_message})"><i class="fa-solid fa-pen"></i></button>`:''}
         ${isMine?`<button class="msg-btn del" onclick="deleteMsg(${m.id_message})"><i class="fa-solid fa-trash"></i></button>`:''}
         <button class="msg-btn react-btn" onclick="showEmojiPicker(event,${m.id_message})">😊</button>
-    </div>`:'';;
+    </div>`:'';
     return `<div class="msg-wrapper ${side}" data-message-id="${m.id_message}">
         ${isMine?actions:''}
-        <div class="msg-bubble">${body}</div>
-        ${reactBar}
+        <div class="msg-bubble-wrap${hasReactions?' has-reactions':''}">
+            <div class="msg-bubble">${body}</div>
+            ${reactOverlay}
+        </div>
         <div class="msg-meta">${fmtTime(m.created_at)} ${edited}</div>
         ${!isMine?actions:''}
     </div>`;
@@ -374,6 +388,7 @@ function sendFile(file) {
 function toggleRecording(){if(!currentConvId){alert('Sélectionnez une conversation.');return;}if(!mediaRecorder||mediaRecorder.state==='inactive')startRecording();else stopRecording();}
 
 function startRecording() {
+    stopPolling(); // pause polling while recording to avoid DOM resets
     navigator.mediaDevices.getUserMedia({audio:true}).then(stream=>{
         audioChunks=[];
         const mimeType=['audio/webm;codecs=opus','audio/webm','audio/ogg;codecs=opus','audio/ogg'].find(t=>MediaRecorder.isTypeSupported(t))||'';
@@ -395,7 +410,14 @@ function startRecording() {
 
 function stopRecording(){if(mediaRecorder&&mediaRecorder.state!=='inactive')mediaRecorder.stop();clearInterval(recInterval);document.getElementById('recBtn').classList.remove('recording');document.getElementById('recTimer').style.display='none';}
 function updateRecTimer(){const m=String(Math.floor(recSeconds/60)).padStart(2,'0'),s=String(recSeconds%60).padStart(2,'0');document.getElementById('recTimer').textContent=m+':'+s;}
-function sendAudio(file){const fd=new FormData();fd.append('action','send_message');fd.append('id_conversation',currentConvId);fd.append('type','audio');fd.append('file',file);fetch(API,{method:'POST',body:fd}).then(r=>r.json()).then(d=>{if(d.success){loadMessages(currentConvId);loadConvs();}});}
+function sendAudio(file){
+    const fd=new FormData();
+    fd.append('action','send_message');fd.append('id_conversation',currentConvId);fd.append('type','audio');fd.append('file',file);
+    const convId=currentConvId;
+    fetch(API,{method:'POST',body:fd}).then(r=>r.json()).then(d=>{
+        if(d.success){renderHash='';loadMessages(convId);loadConvs();setTimeout(()=>startPolling(convId),600);}
+    });
+}
 
 function startEdit(id){const span=document.querySelector(`[data-message-id="${id}"] .msg-content`);if(!span)return;const orig=span.textContent;const inp=document.createElement('input');inp.type='text';inp.className='msg-edit-input';inp.value=orig;span.replaceWith(inp);inp.focus();inp.select();inp.onkeydown=e=>{if(e.key==='Enter')confirmEdit(id,inp.value,orig);if(e.key==='Escape')cancelEdit(id,inp,orig);};inp.onblur=()=>confirmEdit(id,inp.value,orig);}
 function confirmEdit(id,v,orig){const inp=document.querySelector(`[data-message-id="${id}"] .msg-edit-input`);if(!inp)return;v=v.trim();if(!v||v===orig){cancelEdit(id,inp,orig);return;}const fd=new FormData();fd.append('action','edit_message');fd.append('id_message',id);fd.append('content',v);fetch(API,{method:'POST',body:fd}).then(r=>r.json()).then(()=>loadMessages(currentConvId));}
