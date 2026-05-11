@@ -582,11 +582,14 @@ function confirmDeleteConv(id) {
     if(!confirm('Supprimer cette conversation ?')) return;
     const fd=new FormData();fd.append('action','delete_conversation');fd.append('id_conversation',id);
     fetch(API,{method:'POST',body:fd}).then(r=>r.json()).then(()=>{
-        currentConvId=null;stopPolling();
+        currentConvId=null;stopPolling();renderHash='';
         document.querySelector('.chat-wrap').classList.remove('in-chat');
         document.getElementById('chatZone').style.display='none';
         document.getElementById('chatEmpty').style.display='';
-        loadConvs();
+        // Remove instantly from local array so sidebar updates without refresh
+        allConvs=allConvs.filter(c=>c.id_conversation!=id);
+        renderConvs(allConvs);
+        loadConvs(); // sync with server in background
     });
 }
 
