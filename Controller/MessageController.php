@@ -78,31 +78,25 @@ class MessageController
     {
         try {
             $db  = config::getConnexion();
-            // cd = this user's deletion record (NULL if never deleted)
-            // Messages before cd.deleted_at are hidden from this user's preview and unread count
             $sql = "SELECT c.*,
                         m.content    AS last_content,
                         m.type       AS last_type,
                         m.file_name  AS last_file_name,
                         m.created_at AS last_at,
-                        (SELECT COUNT(*) FROM message mm
-                         WHERE mm.id_conversation=c.id_conversation
-                           AND mm.id_sender!=:uid2 AND mm.is_read=0 AND mm.is_deleted=0
-                           AND (cd.deleted_at IS NULL OR mm.created_at > cd.deleted_at)) AS unread
+                        (SELECT COUNT(*) FROM message
+                         WHERE id_conversation=c.id_conversation
+                           AND id_sender!=:uid2 AND is_read=0 AND is_deleted=0) AS unread
                     FROM conversation c
-                    LEFT JOIN conversation_deletions cd
-                        ON cd.id_conversation=c.id_conversation AND cd.id_user=:uid_cd
                     LEFT JOIN message m ON m.id_message=(
-                        SELECT id_message FROM message mm2
-                        WHERE mm2.id_conversation=c.id_conversation AND mm2.is_deleted=0
-                          AND (cd.deleted_at IS NULL OR mm2.created_at > cd.deleted_at)
-                        ORDER BY mm2.created_at DESC LIMIT 1)
+                        SELECT id_message FROM message
+                        WHERE id_conversation=c.id_conversation AND is_deleted=0
+                        ORDER BY created_at DESC LIMIT 1)
                     WHERE (c.id_user1=:uid3 OR c.id_user2=:uid4)
                       AND ((c.id_user1=:uid5 AND c.deleted_by1=0)
                         OR (c.id_user2=:uid6 AND c.deleted_by2=0))
                     ORDER BY COALESCE(m.created_at,c.created_at) DESC";
             $st  = $db->prepare($sql);
-            $st->execute(['uid2'=>$userId,'uid_cd'=>$userId,'uid3'=>$userId,'uid4'=>$userId,'uid5'=>$userId,'uid6'=>$userId]);
+            $st->execute(['uid2'=>$userId,'uid3'=>$userId,'uid4'=>$userId,'uid5'=>$userId,'uid6'=>$userId]);
             $rows = $st->fetchAll();
             foreach ($rows as &$row) {
                 $otherId = ($row['id_user1']==$userId) ? $row['id_user2'] : $row['id_user1'];
