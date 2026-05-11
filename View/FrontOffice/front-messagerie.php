@@ -619,8 +619,9 @@ function closeEmojiPicker() {
 
 function pickEmoji(emoji) {
     if(!activeMsgId||!currentConvId) return;
+    const msgId=activeMsgId; // save before closeEmojiPicker clears it
     closeEmojiPicker();
-    toggleReaction(activeMsgId,emoji);
+    toggleReaction(msgId,emoji);
 }
 
 function toggleReaction(msgId, emoji) {

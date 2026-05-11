@@ -467,7 +467,7 @@ function backToList(){document.querySelector('.chat-wrap').classList.remove('in-
 
 function showEmojiPicker(e,msgId){e.stopPropagation();activeMsgId=msgId;const picker=document.getElementById('emojiPicker');picker.classList.add('open');const x=Math.min(e.clientX,window.innerWidth-230),y=e.clientY+8+230>window.innerHeight?e.clientY-240:e.clientY+8;picker.style.left=x+'px';picker.style.top=y+'px';}
 function closeEmojiPicker(){document.getElementById('emojiPicker').classList.remove('open');activeMsgId=null;}
-function pickEmoji(emoji){if(!activeMsgId||!currentConvId)return;closeEmojiPicker();toggleReaction(activeMsgId,emoji);}
+function pickEmoji(emoji){if(!activeMsgId||!currentConvId)return;const msgId=activeMsgId;closeEmojiPicker();toggleReaction(msgId,emoji);}
 function toggleReaction(msgId,emoji){
     const fd=new FormData();
     fd.append('action','toggle_reaction');fd.append('id_message',msgId);fd.append('emoji',emoji);
