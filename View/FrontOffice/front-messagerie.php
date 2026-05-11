@@ -150,6 +150,42 @@ $apiUrl = '../traitement/messageAPI.php';
         #imgModal.open{display:flex}
         #imgModal img{max-width:90vw;max-height:90vh;border-radius:8px}
         .close-img{position:absolute;top:1rem;right:1rem;color:white;font-size:2rem;cursor:pointer;background:none;border:none}
+
+        /* ─── Responsive ─────────────────────────────────────────────────────── */
+        .hamburger-btn{display:none;background:none;border:none;font-size:1.25rem;color:var(--dark);cursor:pointer;padding:.3rem .4rem;border-radius:6px;line-height:1}
+        .hamburger-btn:hover{background:var(--gray-light)}
+        .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:150}
+        .sidebar-overlay.open{display:block}
+        .back-to-list{display:none;background:none;border:none;font-size:1rem;color:var(--gray);cursor:pointer;padding:.3rem .5rem;border-radius:6px;margin-right:.25rem;flex-shrink:0}
+        .back-to-list:hover{color:var(--primary);background:#eff6ff}
+
+        @media (max-width:1024px){
+            .sidebar{width:240px}
+            .main-content{margin-left:240px}
+            .chat-sidebar{width:250px;min-width:250px}
+        }
+        @media (max-width:768px){
+            .hamburger-btn{display:inline-flex;align-items:center}
+            .sidebar{transform:translateX(-100%);transition:transform .3s ease;z-index:200}
+            .sidebar.mobile-open{transform:translateX(0)}
+            .main-content{margin-left:0;padding:.75rem}
+            .top-navbar{padding:.75rem 1rem;margin-bottom:.75rem}
+            .chat-wrap{height:calc(100dvh - 120px);flex-direction:column;border-radius:var(--radius)}
+            .chat-sidebar{width:100%;min-width:100%;border-right:none;border-bottom:1px solid var(--gray-light)}
+            .chat-main{flex:1;min-height:0}
+            .back-to-list{display:inline-flex;align-items:center}
+            /* On mobile, show EITHER the list OR the active chat */
+            .chat-wrap.in-chat .chat-sidebar{display:none}
+            .chat-wrap.in-chat .chat-main{display:flex}
+            .chat-wrap:not(.in-chat) .chat-main #chatZone{display:none !important}
+            .chat-wrap:not(.in-chat) .chat-main #chatEmpty{display:flex}
+        }
+        @media (max-width:480px){
+            .top-navbar h2{font-size:1.1rem}
+            .msg-bubble-wrap{max-width:85%}
+            audio.msg-audio{max-width:200px}
+            .msg-img{max-width:180px}
+        }
     </style>
 </head>
 <body>
@@ -172,8 +208,10 @@ $apiUrl = '../traitement/messageAPI.php';
         </div>
     </aside>
 
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
     <main class="main-content">
         <div class="top-navbar">
+            <button class="hamburger-btn" onclick="toggleSidebar()" title="Menu"><i class="fa-solid fa-bars"></i></button>
             <h2 style="margin:0;font-size:1.5rem;">Messagerie</h2>
             <span style="font-size:.85rem;color:var(--gray);"><i class="fa-solid fa-circle" style="color:var(--success);font-size:.6rem;"></i> En ligne</span>
         </div>
@@ -268,10 +306,20 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
+// ─── Mobile sidebar ───────────────────────────────────────────────────────────
+function toggleSidebar() {
+    document.querySelector('.sidebar').classList.toggle('mobile-open');
+    document.getElementById('sidebarOverlay').classList.toggle('open');
+}
+function closeSidebar() {
+    document.querySelector('.sidebar').classList.remove('mobile-open');
+    document.getElementById('sidebarOverlay').classList.remove('open');
+}
+
 // ─── Heartbeat (statut en ligne) ──────────────────────────────────────────────
 function startHeartbeat() {
     const ping = () => fetch(API+'?action=get_conversations').catch(()=>{});
-    heartbeatTimer = setInterval(ping, 10000);
+    heartbeatTimer = setInterval(ping, 5000);
 }
 
 // ─── Conversations ────────────────────────────────────────────────────────────
@@ -312,7 +360,9 @@ function openConv(id, name, initials, role, otherId) {
     const zone=document.getElementById('chatZone');
     zone.style.display='flex';
     const color=role==='expert'?'var(--secondary)':'var(--accent)';
+    document.querySelector('.chat-wrap').classList.add('in-chat');
     document.getElementById('chatHeader').innerHTML=`
+        <button class="back-to-list" onclick="backToList()" title="Retour"><i class="fa-solid fa-arrow-left"></i></button>
         <div style="width:38px;height:38px;border-radius:50%;background:${color};color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;">${esc(initials)}</div>
         <div class="chat-header-info">
             <h4>${esc(name)}</h4>
@@ -533,10 +583,20 @@ function confirmDeleteConv(id) {
     const fd=new FormData();fd.append('action','delete_conversation');fd.append('id_conversation',id);
     fetch(API,{method:'POST',body:fd}).then(r=>r.json()).then(()=>{
         currentConvId=null;stopPolling();
+        document.querySelector('.chat-wrap').classList.remove('in-chat');
         document.getElementById('chatZone').style.display='none';
         document.getElementById('chatEmpty').style.display='';
         loadConvs();
     });
+}
+
+function backToList() {
+    document.querySelector('.chat-wrap').classList.remove('in-chat');
+    currentConvId=null;
+    stopPolling();
+    renderHash='';
+    document.getElementById('chatZone').style.display='none';
+    document.getElementById('chatEmpty').style.display='';
 }
 
 // ─── Emoji reactions ──────────────────────────────────────────────────────────

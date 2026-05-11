@@ -243,7 +243,7 @@ class MessageController
             $st2->execute(['uid'=>$otherId]);
             $s = $st2->fetch();
             if (!$s) return ['other_online'=>false,'other_typing'=>false,'other_name'=>$otherName];
-            $online  = (time() - strtotime($s['last_seen'])) < 120;
+            $online  = (time() - strtotime($s['last_seen'])) < 30;
             $typing  = $s['typing_in']==$convId && $s['typing_at'] && (time()-strtotime($s['typing_at']))<10;
             return ['other_online'=>$online,'other_typing'=>(bool)$typing,'other_name'=>$otherName];
         } catch (Exception $e) { return ['other_online'=>false,'other_typing'=>false,'other_name'=>'']; }

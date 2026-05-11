@@ -142,6 +142,41 @@ $apiUrl = '../traitement/messageAPI.php';
         #imgModal.open{display:flex}
         #imgModal img{max-width:90vw;max-height:90vh;border-radius:8px}
         .close-img{position:absolute;top:1rem;right:1rem;color:white;font-size:2rem;cursor:pointer;background:none;border:none}
+
+        /* ─── Responsive ─────────────────────────────────────────────────────── */
+        .hamburger-btn{display:none;background:none;border:none;font-size:1.25rem;color:var(--dark);cursor:pointer;padding:.3rem .4rem;border-radius:6px;line-height:1}
+        .hamburger-btn:hover{background:var(--gray-light)}
+        .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:150}
+        .sidebar-overlay.open{display:block}
+        .back-to-list{display:none;background:none;border:none;font-size:1rem;color:var(--gray);cursor:pointer;padding:.3rem .5rem;border-radius:6px;margin-right:.25rem;flex-shrink:0}
+        .back-to-list:hover{color:var(--secondary);background:#f0f9ff}
+
+        @media (max-width:1024px){
+            .sidebar{width:240px}
+            .main-content{margin-left:240px}
+            .chat-sidebar{width:250px;min-width:250px}
+        }
+        @media (max-width:768px){
+            .hamburger-btn{display:inline-flex;align-items:center}
+            .sidebar{transform:translateX(-100%);transition:transform .3s ease;z-index:200}
+            .sidebar.mobile-open{transform:translateX(0)}
+            .main-content{margin-left:0;padding:.75rem}
+            .top-navbar{padding:.75rem 1rem;margin-bottom:.75rem}
+            .chat-wrap{height:calc(100dvh - 120px);flex-direction:column;border-radius:var(--radius)}
+            .chat-sidebar{width:100%;min-width:100%;border-right:none;border-bottom:1px solid var(--gray-light)}
+            .chat-main{flex:1;min-height:0}
+            .back-to-list{display:inline-flex;align-items:center}
+            .chat-wrap.in-chat .chat-sidebar{display:none}
+            .chat-wrap.in-chat .chat-main{display:flex}
+            .chat-wrap:not(.in-chat) .chat-main #chatZone{display:none !important}
+            .chat-wrap:not(.in-chat) .chat-main #chatEmpty{display:flex}
+        }
+        @media (max-width:480px){
+            .top-navbar h2{font-size:1.1rem}
+            .msg-bubble-wrap{max-width:85%}
+            audio.msg-audio{max-width:200px}
+            .msg-img{max-width:180px}
+        }
     </style>
 </head>
 <body>
@@ -163,8 +198,10 @@ $apiUrl = '../traitement/messageAPI.php';
         </div>
     </aside>
 
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
     <main class="main-content">
         <div class="top-navbar">
+            <button class="hamburger-btn" onclick="toggleSidebar()" title="Menu"><i class="fa-solid fa-bars"></i></button>
             <h2 style="margin:0;font-size:1.5rem;">Messagerie</h2>
             <span style="font-size:.85rem;color:var(--gray);"><i class="fa-solid fa-circle" style="color:var(--success);font-size:.6rem;"></i> En ligne</span>
         </div>
@@ -245,11 +282,14 @@ let renderHash='';
 
 document.addEventListener('DOMContentLoaded', () => {
     loadConvs();
-    setInterval(()=>fetch(API+'?action=get_conversations').catch(()=>{}), 10000);
+    setInterval(()=>fetch(API+'?action=get_conversations').catch(()=>{}), 5000);
     document.addEventListener('click', e=>{
         if(!e.target.closest('#emojiPicker')&&!e.target.closest('.react-btn')) closeEmojiPicker();
     });
 });
+
+function toggleSidebar(){document.querySelector('.sidebar').classList.toggle('mobile-open');document.getElementById('sidebarOverlay').classList.toggle('open');}
+function closeSidebar(){document.querySelector('.sidebar').classList.remove('mobile-open');document.getElementById('sidebarOverlay').classList.remove('open');}
 
 function loadConvs(){fetch(API+'?action=get_conversations').then(r=>r.json()).then(d=>{allConvs=d;renderConvs(d);});}
 
@@ -276,7 +316,9 @@ function openConv(id,name,initials,role,otherId) {
     document.querySelectorAll('.conv-item').forEach(el=>el.classList.toggle('active',el.dataset.id==id));
     document.getElementById('chatEmpty').style.display='none';
     document.getElementById('chatZone').style.display='flex';
+    document.querySelector('.chat-wrap').classList.add('in-chat');
     document.getElementById('chatHeader').innerHTML=`
+        <button class="back-to-list" onclick="backToList()" title="Retour"><i class="fa-solid fa-arrow-left"></i></button>
         <div style="width:38px;height:38px;border-radius:50%;background:var(--primary);color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;">${esc(initials)}</div>
         <div class="chat-header-info">
             <h4>${esc(name)}</h4>
@@ -419,7 +461,9 @@ function startEdit(id){const span=document.querySelector(`[data-message-id="${id
 function confirmEdit(id,v,orig){const inp=document.querySelector(`[data-message-id="${id}"] .msg-edit-input`);if(!inp)return;v=v.trim();if(!v||v===orig){cancelEdit(id,inp,orig);return;}const fd=new FormData();fd.append('action','edit_message');fd.append('id_message',id);fd.append('content',v);fetch(API,{method:'POST',body:fd}).then(r=>r.json()).then(()=>loadMessages(currentConvId));}
 function cancelEdit(id,inp,orig){const span=document.createElement('span');span.className='msg-content';span.dataset.id=id;span.textContent=orig;inp.replaceWith(span);}
 function deleteMsg(id){if(!confirm('Supprimer ce message ?'))return;const fd=new FormData();fd.append('action','delete_message');fd.append('id_message',id);fetch(API,{method:'POST',body:fd}).then(r=>r.json()).then(()=>loadMessages(currentConvId));}
-function confirmDeleteConv(id){if(!confirm('Supprimer cette conversation ?'))return;const fd=new FormData();fd.append('action','delete_conversation');fd.append('id_conversation',id);fetch(API,{method:'POST',body:fd}).then(r=>r.json()).then(()=>{currentConvId=null;stopPolling();document.getElementById('chatZone').style.display='none';document.getElementById('chatEmpty').style.display='';loadConvs();});}
+function confirmDeleteConv(id){if(!confirm('Supprimer cette conversation ?'))return;const fd=new FormData();fd.append('action','delete_conversation');fd.append('id_conversation',id);fetch(API,{method:'POST',body:fd}).then(r=>r.json()).then(()=>{currentConvId=null;stopPolling();document.querySelector('.chat-wrap').classList.remove('in-chat');document.getElementById('chatZone').style.display='none';document.getElementById('chatEmpty').style.display='';loadConvs();});}
+
+function backToList(){document.querySelector('.chat-wrap').classList.remove('in-chat');currentConvId=null;stopPolling();renderHash='';document.getElementById('chatZone').style.display='none';document.getElementById('chatEmpty').style.display='';}
 
 function showEmojiPicker(e,msgId){e.stopPropagation();activeMsgId=msgId;const picker=document.getElementById('emojiPicker');picker.classList.add('open');const x=Math.min(e.clientX,window.innerWidth-230),y=e.clientY+8+230>window.innerHeight?e.clientY-240:e.clientY+8;picker.style.left=x+'px';picker.style.top=y+'px';}
 function closeEmojiPicker(){document.getElementById('emojiPicker').classList.remove('open');activeMsgId=null;}
