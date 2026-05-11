@@ -27,6 +27,14 @@ class MessageController
                 `typing_at` DATETIME NULL DEFAULT NULL,
                 PRIMARY KEY (`id_user`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+            // Tracks when each user deleted a conversation, so old messages stay hidden for them
+            $db->exec("CREATE TABLE IF NOT EXISTS `conversation_deletions` (
+                `id_conversation` INT(11) NOT NULL,
+                `id_user`         INT(11) NOT NULL,
+                `deleted_at`      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (`id_conversation`, `id_user`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
         } catch (Exception $e) {
             error_log('[MessageController] ensureTablesExist: '.$e->getMessage());
         }
@@ -70,25 +78,31 @@ class MessageController
     {
         try {
             $db  = config::getConnexion();
+            // cd = this user's deletion record (NULL if never deleted)
+            // Messages before cd.deleted_at are hidden from this user's preview and unread count
             $sql = "SELECT c.*,
                         m.content    AS last_content,
                         m.type       AS last_type,
                         m.file_name  AS last_file_name,
                         m.created_at AS last_at,
-                        (SELECT COUNT(*) FROM message
-                         WHERE id_conversation=c.id_conversation
-                           AND id_sender!=:uid2 AND is_read=0 AND is_deleted=0) AS unread
+                        (SELECT COUNT(*) FROM message mm
+                         WHERE mm.id_conversation=c.id_conversation
+                           AND mm.id_sender!=:uid2 AND mm.is_read=0 AND mm.is_deleted=0
+                           AND (cd.deleted_at IS NULL OR mm.created_at > cd.deleted_at)) AS unread
                     FROM conversation c
+                    LEFT JOIN conversation_deletions cd
+                        ON cd.id_conversation=c.id_conversation AND cd.id_user=:uid_cd
                     LEFT JOIN message m ON m.id_message=(
-                        SELECT id_message FROM message
-                        WHERE id_conversation=c.id_conversation AND is_deleted=0
-                        ORDER BY created_at DESC LIMIT 1)
+                        SELECT id_message FROM message mm2
+                        WHERE mm2.id_conversation=c.id_conversation AND mm2.is_deleted=0
+                          AND (cd.deleted_at IS NULL OR mm2.created_at > cd.deleted_at)
+                        ORDER BY mm2.created_at DESC LIMIT 1)
                     WHERE (c.id_user1=:uid3 OR c.id_user2=:uid4)
                       AND ((c.id_user1=:uid5 AND c.deleted_by1=0)
                         OR (c.id_user2=:uid6 AND c.deleted_by2=0))
                     ORDER BY COALESCE(m.created_at,c.created_at) DESC";
             $st  = $db->prepare($sql);
-            $st->execute(['uid2'=>$userId,'uid3'=>$userId,'uid4'=>$userId,'uid5'=>$userId,'uid6'=>$userId]);
+            $st->execute(['uid2'=>$userId,'uid_cd'=>$userId,'uid3'=>$userId,'uid4'=>$userId,'uid5'=>$userId,'uid6'=>$userId]);
             $rows = $st->fetchAll();
             foreach ($rows as &$row) {
                 $otherId = ($row['id_user1']==$userId) ? $row['id_user2'] : $row['id_user1'];
@@ -130,6 +144,11 @@ class MessageController
             if (!$conv) return false;
             $col = ($conv['id_user1']==$userId) ? 'deleted_by1' : 'deleted_by2';
             $db->prepare("UPDATE conversation SET $col=1 WHERE id_conversation=:id")->execute(['id'=>$convId]);
+            // Record deletion timestamp so messages before this point stay hidden for this user
+            $db->prepare(
+                'INSERT INTO conversation_deletions (id_conversation,id_user,deleted_at) VALUES (:c,:u,NOW())
+                 ON DUPLICATE KEY UPDATE deleted_at=NOW()'
+            )->execute(['c'=>$convId,'u'=>$userId]);
             $st2 = $db->prepare('SELECT deleted_by1,deleted_by2 FROM conversation WHERE id_conversation=:id');
             $st2->execute(['id'=>$convId]);
             $r = $st2->fetch();
@@ -149,18 +168,30 @@ class MessageController
 
     // ─── Messages ────────────────────────────────────────────────────────────
 
-    public function getMessages(int $convId): array
+    public function getMessages(int $convId, int $viewerUserId=0): array
     {
         try {
-            $st = config::getConnexion()->prepare('SELECT * FROM message WHERE id_conversation=:id ORDER BY created_at ASC');
-            $st->execute(['id'=>$convId]);
+            if ($viewerUserId > 0) {
+                // Hide messages from before this user's deletion timestamp (if any)
+                $sql = 'SELECT m.* FROM message m
+                        LEFT JOIN conversation_deletions cd
+                            ON cd.id_conversation=m.id_conversation AND cd.id_user=:viewer
+                        WHERE m.id_conversation=:id
+                          AND (cd.deleted_at IS NULL OR m.created_at > cd.deleted_at)
+                        ORDER BY m.created_at ASC';
+                $st = config::getConnexion()->prepare($sql);
+                $st->execute(['id'=>$convId,'viewer'=>$viewerUserId]);
+            } else {
+                $st = config::getConnexion()->prepare('SELECT * FROM message WHERE id_conversation=:id ORDER BY created_at ASC');
+                $st->execute(['id'=>$convId]);
+            }
             return $st->fetchAll();
         } catch (Exception $e) { return []; }
     }
 
     public function getMessagesWithReactions(int $convId, int $myUserId): array
     {
-        $messages = $this->getMessages($convId);
+        $messages = $this->getMessages($convId, $myUserId);
         foreach ($messages as &$msg) {
             $msg['reactions'] = $this->getReactions((int)$msg['id_message'], $myUserId);
         }
