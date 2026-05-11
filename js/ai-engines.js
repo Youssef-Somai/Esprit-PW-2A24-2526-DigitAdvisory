@@ -13,7 +13,14 @@ async function callAI(action, data) {
         headers: { 'Content-Type': 'application/json' },
         body:    JSON.stringify(data),
     });
-    const json = await res.json();
+    const raw = await res.text();
+    let json;
+    try {
+        json = JSON.parse(raw);
+    } catch (err) {
+        const preview = raw.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 180);
+        throw new Error(preview || 'Réponse serveur invalide.');
+    }
     if (!json.success) throw new Error(json.error || 'Erreur OpenAI.');
     return json;
 }

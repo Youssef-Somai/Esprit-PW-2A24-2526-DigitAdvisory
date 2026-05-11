@@ -26,7 +26,8 @@ if (!file_exists($_localConfig)) {
 }
 require_once $_localConfig;
 
-if (!defined('OPENAI_API_KEY') || str_contains(OPENAI_API_KEY, 'METTEZ_VOTRE_CLE')) {
+$openAIKey = config::getOpenAIKey();
+if ($openAIKey === null || str_contains($openAIKey, 'METTEZ_VOTRE_CLE')) {
     header('Content-Type: application/json; charset=utf-8');
     echo json_encode([
         'success' => false,
@@ -36,6 +37,10 @@ if (!defined('OPENAI_API_KEY') || str_contains(OPENAI_API_KEY, 'METTEZ_VOTRE_CLE
 }
 
 define('OPENAI_API_URL', 'https://api.openai.com/v1/chat/completions');
+$openAIModel = getenv('OPENAI_MODEL');
+if (!defined('OPENAI_MODEL')) {
+    define('OPENAI_MODEL', is_string($openAIModel) && trim($openAIModel) !== '' ? trim($openAIModel) : 'gpt-4o-mini');
+}
 // ─────────────────────────────────────────────────────────────────────────────
 
 header('Content-Type: application/json; charset=utf-8');
@@ -376,6 +381,11 @@ PROMPT;
     ───────────────────────────────────────────────────────── */
     private function callOpenAI(string $prompt, int $maxTokens = 600): string
     {
+        $openAIKey = config::getOpenAIKey();
+        if ($openAIKey === null) {
+            $this->sendError('Clé API OpenAI non configurée.');
+        }
+
         $payload = json_encode([
             'model'       => OPENAI_MODEL,
             'messages'    => [
@@ -399,7 +409,7 @@ PROMPT;
             CURLOPT_POSTFIELDS     => $payload,
             CURLOPT_HTTPHEADER     => [
                 'Content-Type: application/json',
-                'Authorization: Bearer ' . OPENAI_API_KEY,
+                'Authorization: Bearer ' . $openAIKey,
             ],
             CURLOPT_TIMEOUT        => 30,
             CURLOPT_SSL_VERIFYPEER => false, // Pour XAMPP local
