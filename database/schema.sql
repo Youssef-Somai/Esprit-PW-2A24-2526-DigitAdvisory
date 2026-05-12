@@ -1,5 +1,6 @@
 -- Base combinée DigitAdvisory
--- Tables: user, quiz, question + certificat, critere, certificat_critere
+-- Script global généré : schema + messagerie + messagerie_v2
+-- Tables: user, conversation, message, message_reaction, user_status, quiz, question, certificat, critere, certificat_critere, portfolio, element_portfolio
 
 CREATE DATABASE IF NOT EXISTS digitadvisory
 CHARACTER SET utf8mb4
@@ -8,6 +9,10 @@ COLLATE utf8mb4_general_ci;
 USE digitadvisory;
 
 SET FOREIGN_KEY_CHECKS = 0;
+DROP TABLE IF EXISTS `message_reaction`;
+DROP TABLE IF EXISTS `user_status`;
+DROP TABLE IF EXISTS `message`;
+DROP TABLE IF EXISTS `conversation`;
 DROP TABLE IF EXISTS certificat_critere;
 DROP TABLE IF EXISTS question;
 DROP TABLE IF EXISTS critere;
@@ -40,6 +45,73 @@ CREATE TABLE user (
   face_descriptor longtext DEFAULT NULL,
   PRIMARY KEY (id_user),
   UNIQUE KEY email (email)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+
+
+-- =========================================================
+-- Module Messagerie : conversation, message, réactions, statut utilisateur
+-- =========================================================
+
+CREATE TABLE IF NOT EXISTS `conversation` (
+  `id_conversation` INT(11) NOT NULL AUTO_INCREMENT,
+  `id_user1`        INT(11) NOT NULL,
+  `id_user2`        INT(11) NOT NULL,
+  `deleted_by1`     TINYINT(1) NOT NULL DEFAULT 0,
+  `deleted_by2`     TINYINT(1) NOT NULL DEFAULT 0,
+  `created_at`      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at`      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id_conversation`),
+  UNIQUE KEY `unique_conv` (`id_user1`, `id_user2`),
+  KEY `idx_conv_user1` (`id_user1`),
+  KEY `idx_conv_user2` (`id_user2`),
+  CONSTRAINT `fk_conversation_user1` FOREIGN KEY (`id_user1`) REFERENCES `user`(`id_user`) ON DELETE CASCADE,
+  CONSTRAINT `fk_conversation_user2` FOREIGN KEY (`id_user2`) REFERENCES `user`(`id_user`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE IF NOT EXISTS `message` (
+  `id_message`      INT(11) NOT NULL AUTO_INCREMENT,
+  `id_conversation` INT(11) NOT NULL,
+  `id_sender`       INT(11) NOT NULL,
+  `type`            ENUM('text','file','audio') NOT NULL DEFAULT 'text',
+  `content`         TEXT DEFAULT NULL,
+  `file_path`       VARCHAR(500) DEFAULT NULL,
+  `file_name`       VARCHAR(255) DEFAULT NULL,
+  `file_size`       INT(11) DEFAULT NULL,
+  `is_read`         TINYINT(1) NOT NULL DEFAULT 0,
+  `is_edited`       TINYINT(1) NOT NULL DEFAULT 0,
+  `is_deleted`      TINYINT(1) NOT NULL DEFAULT 0,
+  `created_at`      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at`      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id_message`),
+  KEY `idx_message_conversation` (`id_conversation`),
+  KEY `idx_message_sender` (`id_sender`),
+  CONSTRAINT `fk_message_conversation` FOREIGN KEY (`id_conversation`) REFERENCES `conversation`(`id_conversation`) ON DELETE CASCADE,
+  CONSTRAINT `fk_message_sender` FOREIGN KEY (`id_sender`) REFERENCES `user`(`id_user`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE IF NOT EXISTS `message_reaction` (
+  `id_reaction` INT(11) NOT NULL AUTO_INCREMENT,
+  `id_message`  INT(11) NOT NULL,
+  `id_user`     INT(11) NOT NULL,
+  `emoji`       VARCHAR(20) NOT NULL,
+  `created_at`  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id_reaction`),
+  UNIQUE KEY `unique_reaction` (`id_message`, `id_user`, `emoji`),
+  KEY `idx_reaction_user` (`id_user`),
+  CONSTRAINT `fk_reaction_message` FOREIGN KEY (`id_message`) REFERENCES `message`(`id_message`) ON DELETE CASCADE,
+  CONSTRAINT `fk_reaction_user` FOREIGN KEY (`id_user`) REFERENCES `user`(`id_user`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE IF NOT EXISTS `user_status` (
+  `id_user`   INT(11) NOT NULL,
+  `last_seen` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `typing_in` INT(11) DEFAULT NULL,
+  `typing_at` TIMESTAMP NULL DEFAULT NULL,
+  PRIMARY KEY (`id_user`),
+  KEY `idx_user_status_typing_in` (`typing_in`),
+  CONSTRAINT `fk_user_status_user` FOREIGN KEY (`id_user`) REFERENCES `user`(`id_user`) ON DELETE CASCADE,
+  CONSTRAINT `fk_user_status_conversation` FOREIGN KEY (`typing_in`) REFERENCES `conversation`(`id_conversation`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE quiz (
