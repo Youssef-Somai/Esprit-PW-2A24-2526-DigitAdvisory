@@ -1,92 +1,79 @@
-# Digit Advisory
-
-## Overview
-
-Digit Advisory is a web-based consulting platform that connects companies with expert consultants across multiple domains of consulting and audit.
-
-The platform helps organizations identify their needs through quiz-based assessment, receive tailored recommendations, and access the most relevant experts and certifications (ISO standards).
-
-This project was developed at Esprit School of Engineering – Tunisia (Academic Year 2025–2026).
+# Module 5 — Gestion des Missions & Projets
+## Architecture MVC | PDO | PHP
 
 ---
 
-## Features
+## 📁 Structure du projet
 
-* Platform connecting companies with expert consultants
-* Quiz-based assessment to evaluate company needs and maturity
-* Smart recommendations of consultants based on results
-* Certification (ISO) recommendation according to company capacity
-* Portfolio management for consultants and companies
-* Project management (missions, candidatures, livrables)
-* Internal messaging system (conversation & messages)
-* User dashboard (admin, company, consultant)
-* Access to expert consultants for personalized support
-
----
-
-## Tech Stack
-
-### Frontend
-
-* HTML5
-* CSS3
-* JavaScript
-
-### Backend
-
-* PHP
-
-### Database
-
-* MySQL
-
-### Development Tools
-
-* Git
-* GitHub
-* Visual Studio Code
-* XAMPP / Apache Server
+```
+module5/
+├── index.php                   ← Router principal (Front Controller)
+├── config/
+│   ├── database.php            ← Connexion PDO (Singleton)
+│   └── schema.sql              ← Script SQL à importer
+├── Model/
+│   ├── Mission.php             ← Modèle Mission (CRUD PDO)
+│   └── Livrable.php            ← Modèle Livrable (CRUD PDO)
+├── Controller/
+│   └── MissionController.php  ← Contrôleur + validation serveur
+└── View/
+    └── mission/
+        ├── front_list.php      ← Liste des missions (Front Office)
+        ├── front_detail.php    ← Détail mission + livrables
+        ├── back_list.php       ← Dashboard admin (Back Office)
+        └── back_form.php       ← Formulaire créer/modifier
+```
 
 ---
 
-## Architecture
+## 🚀 Installation
 
-The application follows a **Client–Server Architecture** based on the **MVC (Model–View–Controller)** pattern.
+### 1. Base de données
+```sql
+-- Dans phpMyAdmin ou MySQL CLI :
+SOURCE /path/to/module5/config/schema.sql;
+```
 
-### Model
+### 2. Configuration PDO
+Éditez `config/database.php` avec vos identifiants :
+```php
+private $host = 'localhost';
+private $db   = 'consulting_db';
+private $user = 'root';
+private $pass = '';
+```
 
-Handles database operations using MySQL.
+### 3. Template Eduleb
+Copiez le dossier `assets/` de votre template Eduleb dans `module5/`.
 
-### View
-
-Manages the user interface using HTML, CSS, and JavaScript.
-
-### Controller
-
-Handles business logic and communication between the Model and View using PHP.
-
-### Workflow
-
-1. The user interacts with the interface
-2. The request is sent to the Controller
-3. The Controller processes the logic
-4. The Model accesses the database
-5. The response is returned to the user
-
----
-
-## Academic Context
-
-Developed as part of a Web Technologies Project (2nd Year)  
-Esprit School of Engineering – Tunisia  
-Academic Year: 2025–2026
+### 4. Démarrer
+Placez le dossier `module5/` dans votre `htdocs/` (XAMPP) ou `www/` (WAMP), puis accédez à :
+```
+http://localhost/module5/
+```
 
 ---
 
-## Getting Started
+## 🌐 URLs disponibles
 
-### Installation
+| URL | Description |
+|-----|-------------|
+| `index.php` | Front Office — liste des missions |
+| `index.php?action=front_list` | Liste des missions |
+| `index.php?action=front_detail&id=1` | Détail + livrables d'une mission |
+| `index.php?action=back_list` | Back Office — dashboard admin |
+| `index.php?action=back_create` | Créer une nouvelle mission |
+| `index.php?action=back_edit&id=1` | Modifier une mission |
+| `index.php?action=back_delete&id=1` | Supprimer une mission |
 
-```bash
-git clone https://github.com/Youssef-Somai/Esprit-PW-2A24-2526-DigitAdvisory.git
-cd DigitAdvisory
+---
+
+## ✅ Contraintes respectées
+
+- ✅ **MVC** : Model / View / Controller séparés
+- ✅ **PDO** : Toutes les requêtes utilisent PDO avec requêtes préparées
+- ✅ **POO** : Classes Mission, Livrable, MissionController, Database
+- ✅ **Validation JS** : Aucun attribut HTML5 (required, pattern, type=email...) — tout est validé en JavaScript
+- ✅ **Validation PHP** : Double validation côté serveur
+- ✅ **Templates** : Front Office (Eduleb) + Back Office (Dashboard)
+- ✅ **CRUD complet** : Create, Read, Update, Delete sur Mission + Livrable
